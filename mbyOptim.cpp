@@ -12,9 +12,9 @@ struct DAGnode
     vector<string>A;
     DAGnode *sblngs[2]= {NULL,NULL};
 };
-//ä¸ºäº†æ˜¯çŠ¯é”™è¯¯æ“ä½œ
+//ÎªÁËÊÇ·¸´íÎó²Ù×÷
 vector<DAGnode>DAG;
-vector<Quadruple>optdQT; //ä¼˜åŒ–åçš„å››å…ƒå¼
+vector<Quadruple>optdQT; //ÓÅ»¯ºóµÄËÄÔªÊ½
 bool ifExist(string str)
 {
     int i=0,j=0;
@@ -69,14 +69,14 @@ int delA(string str)
 bool ifConst(string str)
 {
     bool result=false;
-    if( (str[0]-'0')<10 && (str[0]-'0') >0)  //å®šä¹‰ä¸€ä¸ªå¸¸æ•°ç±»å‹ç¬¬ä¸€ä½å¿…ç„¶æ˜¯æ•°å­—
+    if( (str[0]-'0')<10 && (str[0]-'0') >0)  //¶¨ÒåÒ»¸ö³£ÊıÀàĞÍµÚÒ»Î»±ØÈ»ÊÇÊı×Ö
         result=true;
     return result;
 }
 int optimization()
 {
-    int qtI=0;//è¯»å–å››å…ƒå¼çš„ä½ç½® ä»å¤´
-    int i=0,j=0,pos=0; //å¾ªç¯ä¸´æ—¶å˜é‡
+    int qtI=0;//¶ÁÈ¡ËÄÔªÊ½µÄÎ»ÖÃ ´ÓÍ·
+    int i=0,j=0,pos=0; //Ñ­»·ÁÙÊ±±äÁ¿
     bool exist=false;
     DAGnode tmpNode;
     while(qtI<qua_list.size())
@@ -97,7 +97,7 @@ int optimization()
             tmpNode.A.push_back(qua_list[qtI].s[3]);
             DAG.push_back(tmpNode);
         }
-        else if(ifConst(qua_list[qtI].s[1]))   //A=C1?C2 æˆ– A=C1 å³ç¬¬äºŒä½ä¸ºå¸¸æ•°
+        else if(ifConst(qua_list[qtI].s[1]))   //A=C1?C2 »ò A=C1 ¼´µÚ¶şÎ»Îª³£Êı
         {
             if(ifConst(qua_list[qtI].s[2]))
             {
@@ -107,7 +107,7 @@ int optimization()
                 stream1>>C1;
                 stream1<<qua_list[qtI].s[1]);
                 stream1>>C2;
-                //è®¡ç®—C
+                //¼ÆËãC
             }
         }
     }
