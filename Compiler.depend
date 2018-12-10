@@ -1,0 +1,40 @@
+# depslib dependency file v1.0
+1544322422 source:e:\compiler\compiler\assembly.cpp
+
+1544359355 source:e:\compiler\compiler\main.cpp
+	<bits/stdc++.h>
+	"head.h"
+
+1544357251 e:\compiler\compiler\head.h
+	<bits/stdc++.h>
+
+1544359637 source:e:\compiler\compiler\lex.cpp
+	<bits/stdc++.h>
+	"head.h"
+
+1544351727 source:e:\compiler\compiler\translate.cpp
+	<bits/stdc++.h>
+	"head.h"
+
+1544322422 source:d:\development\cb\t5\t\compiler\assembly.cpp
+
+1544359637 source:d:\development\cb\t5\t\compiler\lex.cpp
+	<bits/stdc++.h>
+	"head.h"
+
+1544357251 d:\development\cb\t5\t\compiler\head.h
+	<bits/stdc++.h>
+
+1544368366 source:d:\development\cb\t5\t\compiler\main.cpp
+	<bits/stdc++.h>
+	"head.h"
+
+1544369531 source:d:\development\cb\t5\t\compiler\mby.cpp
+	<iostream>
+	<vector>
+	"head.h"
+
+1544370672 source:d:\development\cb\t5\t\compiler\translate.cpp
+	<bits/stdc++.h>
+	"head.h"
+
