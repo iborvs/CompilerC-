@@ -162,11 +162,11 @@ int fn()
                     if(words[token_i].value == "}") {
                         token_i++;
                         //ËÄÔªÊ½
-                        qua.s[0] = "end";
-                        qua.s[1] = " ";
-                        qua.s[2] = " ";
-                        qua.s[3] = " ";
-                        out_qua();
+//                        qua.s[0] = "end";
+//                        qua.s[1] = " ";
+//                        qua.s[2] = " ";
+//                        qua.s[3] = " ";
+//                        out_qua();
                         return 1;
                     }
                 }
