@@ -39,6 +39,7 @@
 		<Unit filename="lex.cpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="mby.cpp" />
+		<Unit filename="mbyOptim.cpp" />
 		<Unit filename="translate.cpp" />
 		<Extensions>
 			<code_completion />

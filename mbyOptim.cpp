@@ -12,6 +12,7 @@ struct DAGnode
     vector<string>A;
     DAGnode *sblngs[2]= {NULL,NULL};
 };
+//为了是犯错误操作
 vector<DAGnode>DAG;
 vector<Quadruple>optdQT; //优化后的四元式
 bool ifExist(string str)
