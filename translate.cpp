@@ -167,6 +167,7 @@ int fn()
 //                        qua.s[2] = " ";
 //                        qua.s[3] = " ";
 //                        out_qua();
+//as
                         return 1;
                     }
                 }
