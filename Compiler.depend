@@ -29,12 +29,17 @@
 	<bits/stdc++.h>
 	"head.h"
 
-1544369531 source:d:\development\cb\t5\t\compiler\mby.cpp
+1544448938 source:d:\development\cb\t5\t\compiler\mby.cpp
 	<iostream>
 	<vector>
 	"head.h"
 
 1544370672 source:d:\development\cb\t5\t\compiler\translate.cpp
 	<bits/stdc++.h>
+	"head.h"
+
+1544448955 source:d:\development\cb\t5\t\compiler\mbyoptim.cpp
+	<iostream>
+	<vector>
 	"head.h"
 

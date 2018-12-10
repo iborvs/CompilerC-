@@ -3,26 +3,28 @@
 #include "head.h"
 //装有四元式转汇编相关代码
 using namespace std;
-typedef struct SYMBL
+struct SYMBL
 {
     string name;
     int L;
 };
-typedef struct sY
+struct sY
 {
     string s[4];
-};
-typedef struct QT
+}sY;
+struct QT
 {
     SYMBL s[4];
 };
 extern vector<Quadruple> qua_list;
-vector<SYMBL>sba;  //伪符号表
-vector<sY>siyuan;  //无活跃信息四元式
+vector<SYMBL>sba;  //伪符号表  //无活跃信息四元式
 vector<QT>qtS;      //有活跃信息四元式
 string rGroup[3]= {"","",""}; //寄存器组名称 三寄存器
 int qtPos[2];  //用于存放在寄存器里的元素在四元式栈里的地址
 vector<string>cmpCode; //存放汇编指令 没有分号
+
+bool buildCodes();
+
 int getFreeR() //找空闲寄存器，多寄存器时使用
 {
     int pos=-1,i=0;
@@ -47,7 +49,37 @@ string opToCmpil(string str)  //将运算符等转换为汇编语言的指令
         cmpStr="DIV";
     return cmpStr;
 }
-int buildCpl() //四元式生成汇编指令 没有分号
+bool buildDSEG()  //建立数据段汇编代码 未完
+{
+    int nums[5]= {1};
+    int i=0;
+    string aN[5]; //int转string临时变量
+    stringstream stream1;
+    for(i=0; i<5; i++)
+    {
+        stream1<<nums[i];
+        aN[i]=stream1.str();
+    }
+    string tmpStr="DSEG    SEGMENT"; //汇编语句输出临时变量
+    cmpCode.push_back(tmpStr);
+    tmpStr="        int    DD "+aN[0]+" DUP(0)";
+    cmpCode.push_back(tmpStr);
+    tmpStr="DSEG    ENDS";
+    cmpCode.push_back(tmpStr);
+    return true;
+}
+bool buildCSEG()
+{
+    string tmpStr="CSEG    SEGMENT";
+    cmpCode.push_back(tmpStr);
+    tmpStr="        ASSUME  CS:CSEG,DS:DSEG";
+    cmpCode.push_back(tmpStr);
+    buildCodes();
+    tmpStr="CSEG    ENDS";
+    cmpCode.push_back(tmpStr);
+    return true;
+}
+bool buildCodes()
 {
     int i=0,qtI=0,R=-1;
     string tmpStr; //存放临时汇编语句
@@ -57,23 +89,23 @@ int buildCpl() //四元式生成汇编指令 没有分号
         {
             if(rGroup[0]=="")
             {
-                tmpStr="LD R,"+qtS[i].s[1].name;
+                tmpStr="        LD R,"+qtS[i].s[1].name;
                 cmpCode.push_back(tmpStr);
-                tmpStr=opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
+                tmpStr="        "+opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
                 cmpCode.push_back(tmpStr);
             }
             else if(rGroup[0]==qtS[i].s[1].name)
             {
                 if(qtS[i].s[1].L+1)
                 {
-                    tmpStr="ST R,"+qtS[i].s[1].name;
+                    tmpStr="        ST R,"+qtS[i].s[1].name;
                     cmpCode.push_back(tmpStr);
-                    tmpStr=opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
+                    tmpStr="        "+opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
                     cmpCode.push_back(tmpStr);
                 }
                 else
                 {
-                    tmpStr=opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
+                    tmpStr="        "+opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
                     cmpCode.push_back(tmpStr);
                 }
             }
@@ -81,18 +113,18 @@ int buildCpl() //四元式生成汇编指令 没有分号
             {
                 if(qtS[qtPos[0]].s[qtPos[1]].L+1)  //利用实现存在qtpos里的元素位置定位
                 {
-                    tmpStr="ST R,"+qtS[qtPos[0]].s[qtPos[1]].name;
+                    tmpStr="        ST R,"+qtS[qtPos[0]].s[qtPos[1]].name;
                     cmpCode.push_back(tmpStr);
-                    tmpStr="LD R,"+qtS[i].s[1].name;
+                    tmpStr="        LD R,"+qtS[i].s[1].name;
                     cmpCode.push_back(tmpStr);
-                    tmpStr=opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
+                    tmpStr="        "+opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
                     cmpCode.push_back(tmpStr);
                 }
                 else
                 {
-                    tmpStr="LD R,"+qtS[i].s[1].name;
+                    tmpStr="        LD R,"+qtS[i].s[1].name;
                     cmpCode.push_back(tmpStr);
-                    tmpStr=opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
+                    tmpStr="        "+opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name;
                     cmpCode.push_back(tmpStr);
                 }
             }
@@ -104,31 +136,42 @@ int buildCpl() //四元式生成汇编指令 没有分号
         {
             if(rGroup[0]=="")
             {
-                tmpStr="LD R,"+qtS[i].s[1].name;
+                tmpStr="        LD R,"+qtS[i].s[1].name;
                 cmpCode.push_back(tmpStr);
             }
             else if(rGroup[0]==qtS[i].s[1].name)
             {
-                tmpStr="ST R,"+qtS[i].s[1].name;
+                tmpStr="        ST R,"+qtS[i].s[1].name;
                 cmpCode.push_back(tmpStr);
             }
-            else{ // !=B , !=A ?
-                    if(qtS[qtPos[0]].s[qtPos[1]].L+1){
-                        tmpStr="ST R,"+qtS[qtPos[0]].s[qtPos[1]].name;
-                        cmpCode.push_back(tmpStr);
-                        tmpStr="LD R,"+qtS[i].s[1].name;
-                        cmpCode.push_back(tmpStr);
-                    }
-                    else{
-                        tmpStr="LD R,"+qtS[i].s[1].name;
-                        cmpCode.push_back(tmpStr);
-                    }
+            else  // !=B , !=A ?
+            {
+                if(qtS[qtPos[0]].s[qtPos[1]].L+1)
+                {
+                    tmpStr="        ST R,"+qtS[qtPos[0]].s[qtPos[1]].name;
+                    cmpCode.push_back(tmpStr);
+                    tmpStr="        LD R,"+qtS[i].s[1].name;
+                    cmpCode.push_back(tmpStr);
+                }
+                else
+                {
+                    tmpStr="        LD R,"+qtS[i].s[1].name;
+                    cmpCode.push_back(tmpStr);
+                }
             }
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
             qtPos[1]=3;
         }
     }
+    return true;
+}
+int buildCpl() //四元式生成汇编指令 没有分号
+{
+    int i=0,qtI=0,R=-1;
+    string tmpStr; //存放临时汇编语句
+    buildDSEG();
+    buildCSEG();
     return 0;
 }
 int findElem(string str)
@@ -191,8 +234,9 @@ int runCompil()
     qtScanL();
     buildCpl();
     int i=0;
-    for(i=0;i<cmpCode.size();i++){
-        cout<<cmpCode[i]<<";"<<endl;
+    for(i=0; i<cmpCode.size(); i++)
+    {
+        cout<<cmpCode[i]<<endl;
     }
     return 0;
 }
