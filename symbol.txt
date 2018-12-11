@@ -1,2 +1,0 @@
-a	identify	int	offset0
-b	identify	int	offset4
