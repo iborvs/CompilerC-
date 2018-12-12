@@ -11,11 +11,13 @@ struct Word
     int code;
     string value;
 };
+
 //一个四元式序列中的4个值
 struct Quadruple
 {
     string s[4];
 };
+
 //符号表
 struct Synbl
 {
@@ -24,7 +26,38 @@ struct Synbl
     string cat;
     string addr;
 };
-
+struct Arr
+{
+    //int up  //因为C语言数组下界为0，所以省略
+    string name;
+    int up;
+    string elem_type;
+    int length;
+};
+/*
+struct Typel  //只扩充数组，结构体等不扩充，所以类型表没用
+{
+    string name;
+    string typ;
+    struct Arr arr;
+};
+*/
+struct Pfinfl
+{
+    string name;
+    int level;     //层次数
+    int off;        //区距
+    int para_num;  //参数个数
+    int entry;
+    struct Synbl para[10];
+};
+struct Vall
+{
+    int old_sp;    //sp
+    int rt_addr;   //返回地址
+    int para_num;  //形参个数
+    vector<string> formal_para; //形参
+};
 
 
 //词法分析
@@ -37,6 +70,7 @@ void reset(char ch, char token[], FILE *fp, int &state, int &j);
 void parse(Word word);
 void lex();
 
+
 //语法分析
 int translate();
 int fn();
@@ -48,5 +82,9 @@ void fn_body();
 int para();
 int id();
 int type();
+void out_qua();
+string int_to_str(int& k);
+
+int exp();
 
 #endif // HEAD_H_INCLUDED
