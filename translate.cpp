@@ -8,20 +8,13 @@ extern vector<Synbl> synbl;
 struct Quadruple qua;
 struct Synbl symbol;
 int token_i = 0;
-int qua_i = 0;
 int offset = 0;
 ofstream fout1;
 ofstream fout2;
-
-string int_to_str(int& k)
-{
-    string s;
-    stringstream ss;
-    ss<<k;
-    return ss.str();
-}
-
+int t_k = 0;   //用来表示算数表达式tk中的k
+string tk;
 //四元式存到qua_list和文件
+
 void out_qua()
 {
     qua_list.push_back(qua);
@@ -76,6 +69,14 @@ void fn_body()
     }
     else
         token_i = token_i_tmp;
+    /*
+    if(judge()) {
+
+    }
+    if(circle()) {
+
+    }
+    */
  }
 
 int evaluation()
@@ -83,15 +84,15 @@ int evaluation()
     if(type()) {
         if(id()) {
             if(words[token_i].value == "=") {
+                string tmp_value = words[token_i-1].value;  //用于定位需要四元式中需要输出的变量
                 token_i++;
                 if(r_value()) {
                     if(words[token_i].value == ";") {
                         token_i++;
                         //四元式
                         qua.s[0] = "=";
-                        qua.s[1] = words[token_i-2].value;
+                        qua.s[3] = tmp_value;
                         qua.s[2] = " ";
-                        qua.s[3] = words[token_i-4].value;
                         out_qua();
                         return 1;
                     }
@@ -119,12 +120,6 @@ int rt()
 int r_value()
 {
     if(factor()){
-        symbol.name = words[token_i-3].value;
-        symbol.type = "identify";
-        symbol.cat =  words[token_i-4].value;
-        symbol.addr = "offset"+int_to_str(offset);
-        offset += 4;
-        out_symbol();
         return 1;
     }
     else {
@@ -134,10 +129,16 @@ int r_value()
 
 int factor()
 {
-    if(id()) {
+    if(exp()) {
+        qua.s[1] = tk;
+        return 1;
+    }
+    else if(id()) {
+        qua.s[1] = words[token_i-1].value;
         return 1;
     }
     else if(words[token_i].type == "c") {
+        qua.s[1] = words[token_i].value;
         token_i++;
         return 1;
     }
@@ -162,12 +163,11 @@ int fn()
                     if(words[token_i].value == "}") {
                         token_i++;
                         //四元式
-//                        qua.s[0] = "end";
-//                        qua.s[1] = " ";
-//                        qua.s[2] = " ";
-//                        qua.s[3] = " ";
-//                        out_qua();
-//as
+                        qua.s[0] = "end";
+                        qua.s[1] = " ";
+                        qua.s[2] = " ";
+                        qua.s[3] = " ";
+                        out_qua();
                         return 1;
                     }
                 }
