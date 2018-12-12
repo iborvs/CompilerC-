@@ -209,7 +209,7 @@ void qtScanL()
 {
     int i=0,j=0;
     QT qtElem;
-    for(i=0; i<qua_list.size(); i++)
+    for(i=qua_list.size()-1; i>=0; i--)
     {
         for(j=0; j<4; j++)
         {
@@ -227,6 +227,7 @@ void qtScanL()
         sba[order].L=i;
         qtS.push_back(qtElem);
     }
+    reverse(qtS.begin(),qtS.end());
 }
 int runCompil()
 {
