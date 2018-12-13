@@ -76,7 +76,7 @@ int fun_while()
 
     if(A.back().compare("S")==0&&words[token_i].value.compare("while")==0)
     {
-        cout<<"S->W D F"<<endl;
+        //cout<<"S->W D F"<<endl;
         A.pop_back();
         A.push_back("WE");
         A.push_back("F");
@@ -86,7 +86,7 @@ int fun_while()
     }
     else if(A.back().compare("F")==0&&words[token_i].value.compare("{")==0)
     {
-        cout<<"F->{f}"<<endl;
+        //cout<<"F->{f}"<<endl;
         A.pop_back();
         A.push_back("}");
         A.push_back("f");
@@ -95,14 +95,14 @@ int fun_while()
     }
     else if(A.back().compare("F")==0&&words[token_i].value.compare("{")!=0)
     {
-        cout<<"F->f"<<endl;
+        //cout<<"F->f"<<endl;
         A.pop_back();
         A.push_back("f");
         return 1;
     }
     else if(A.back().compare("W")==0)
     {
-        cout<<"W->while"<<endl;
+        //cout<<"W->while"<<endl;
         A.pop_back();
         A.push_back("WH");
         A.push_back("while");
@@ -110,7 +110,7 @@ int fun_while()
     }
     else if(A.back().compare("D")==0&&words[token_i].value.compare("(")==0)
     {
-        cout<<"D->(R)"<<endl;
+        //cout<<"D->(R)"<<endl;
         A.pop_back();
         A.push_back("DO");
         A.push_back(")");
@@ -120,7 +120,7 @@ int fun_while()
     }
     else if(A.back().compare("R")==0&&(words[token_i].type.compare("I")==0||words[token_i].type.compare("c")==0))
     {
-        cout<<"R->I R'"<<endl;
+        //cout<<"R->I R'"<<endl;
         A.pop_back();
         A.push_back("R'");
         A.push_back("I");
@@ -128,7 +128,7 @@ int fun_while()
     }
     else if(A.back().compare("R'")==0&&words[token_i].type.compare("P")==0)
     {
-        cout<<"R'->w I"<<endl;
+        //cout<<"R'->w I"<<endl;
         A.pop_back();
         A.push_back("I");
         A.push_back(words[token_i].value);
@@ -136,7 +136,7 @@ int fun_while()
     }
     else if(A.back().compare("R'")==0&&words[token_i].type.compare("P")!=0)
     {
-        cout<<"R'->"<<endl;
+        //cout<<"R'->"<<endl;
         A.pop_back();
         s = words[token_i].value;
         return 1;
@@ -179,11 +179,11 @@ int fun_while()
         {
           if(A.back().compare(")")==0)
            {
-               cout<<" "<<"D->(R)"<<endl;
+               //cout<<" "<<"D->(R)"<<endl;
            }
            if(A.back().compare("}")==0)
            {
-               cout<<" "<<"F->{f}"<<endl;
+               //cout<<" "<<"F->{f}"<<endl;
            }
             A.pop_back();
             token_i++;
@@ -205,6 +205,7 @@ int fn_while()
     }
     if(a==2) {
         //cout<<"RIGHT"<<endl;
+        token_i++;
         return 1;
     }
     else if(a==0) {

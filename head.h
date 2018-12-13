@@ -87,5 +87,6 @@ string int_to_str(int& k);
 
 int exp();
 int fn_while();
+int fn_if();
 
 #endif // HEAD_H_INCLUDED

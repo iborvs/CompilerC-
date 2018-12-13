@@ -85,6 +85,13 @@ void fn_body()
     else {
         token_i = token_i_tmp;
     }
+    token_i_tmp = token_i;
+    if(fn_if()) {
+        fn_body();
+    }
+    else {
+        token_i = token_i_tmp;
+    }
     /*
     if(circle()) {
 
@@ -105,7 +112,7 @@ int evaluation()
                         //四元式
                         qua.s[0] = "=";
                         qua.s[3] = tmp_value;
-                        qua.s[2] = " ";
+                        qua.s[2] = "_";
                         out_qua();
                         return 1;
                     }
@@ -177,9 +184,9 @@ int fn()
                         token_i++;
                         //四元式
                         qua.s[0] = "end";
-                        qua.s[1] = " ";
-                        qua.s[2] = " ";
-                        qua.s[3] = " ";
+                        qua.s[1] = "_";
+                        qua.s[2] = "_";
+                        qua.s[3] = "_";
                         out_qua();
                         return 1;
                     }

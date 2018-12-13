@@ -218,7 +218,7 @@ Word search(char token[])
     Word word;
     for(int i = 0; i < 22; i++) {
         if(strcmp(K[i], token) == 0) {
-            word.type = 'K';
+            word.type = "K";
             word.code = i + 1;
             word.value = K[i];
             return word;
@@ -226,7 +226,7 @@ Word search(char token[])
     }
     for(int i = 0; i<19; i++) {
         if(strcmp(P[i], token) == 0) {
-            word.type = 'P';
+            word.type = "P";
             word.code = i + 1;
             word.value = P[i];
             return word;
@@ -245,7 +245,7 @@ Word state_to_code(int state_before, char token[])
     if(word.code != 0)
         return word;
     if(state_before == 2) {
-        word.type = 'I';
+        word.type = "I";
         int flag = 0;
         for(int i = 0; i < I.size(); i++) {
             if(I[i] == token) {
@@ -261,20 +261,20 @@ Word state_to_code(int state_before, char token[])
         return word;
     }
     else if(state_before == 3 || state_before == 7) {
-        word.type = 'c';
+        word.type = "c";
         count4++;
         word.code = count4;
         //consl.push_back(word.value);
         return word;
     }
     else if(state_before == 16) {
-        word.type = 'C';
+        word.type = "C";
         count2++;
         word.code = count2;
         return word;
     }
     else if(state_before == 17) {
-        word.type = 'S';
+        word.type = "S";
         count3++;
         word.code = count3;
         return word;
