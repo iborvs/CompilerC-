@@ -16,13 +16,6 @@ stack<Syn_elem> syn; //”Ô∑®’ª
 stack<string> sem; //”Ô“Â’ª
 string t = "t";
 
-string int_to_str(int& k)
-{
-    string s;
-    stringstream ss;
-    ss<<k;
-    return ss.str();
-}
 void qt(string s)
 {
     string a, b;

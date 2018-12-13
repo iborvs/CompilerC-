@@ -14,6 +14,13 @@ ofstream fout2;
 int t_k = 0;   //用来表示算数表达式tk中的k
 string tk;
 //四元式存到qua_list和文件
+string int_to_str(int& k) //输出tk
+{
+    string s;
+    stringstream ss;
+    ss<<k;
+    return ss.str();
+}
 
 void out_qua()
 {
@@ -61,18 +68,24 @@ void fn_body()
     if(evaluation()) {
         fn_body();
     }
-    else
+    else {
         token_i = token_i_tmp;
+    }
     token_i_tmp = token_i;
     if(rt()) {
         fn_body();
     }
-    else
+    else {
         token_i = token_i_tmp;
-    /*
-    if(judge()) {
-
     }
+    token_i_tmp = token_i;
+    if(fn_while()) {
+        fn_body();
+    }
+    else {
+        token_i = token_i_tmp;
+    }
+    /*
     if(circle()) {
 
     }

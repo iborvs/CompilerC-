@@ -86,5 +86,6 @@ void out_qua();
 string int_to_str(int& k);
 
 int exp();
+int fn_while();
 
 #endif // HEAD_H_INCLUDED

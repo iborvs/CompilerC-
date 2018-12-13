@@ -8,6 +8,8 @@ extern vector<Quadruple> qua_list;
 extern struct Quadruple qua;
 extern vector<Word> words;
 extern int token_i;
+extern int t_k;   //用来表示算数表达式tk中的k
+extern string tk;
 
 vector<string> A;
 vector<string> SEM;
@@ -33,7 +35,7 @@ void WE()
     qua.s[1] = "_";
     qua.s[2] = "_";
     qua.s[3] = "_";
-    qua_list.push_back(qua);
+    out_qua();
 }
 void WH()
 {
@@ -41,22 +43,23 @@ void WH()
     qua.s[1] = "_";
     qua.s[2] = "_";
     qua.s[3] = "_";
-    qua_list.push_back(qua);
+    out_qua();
 }
 void DO()
 {
     if(SEM.size()==2)
     {
+        tk = "t"+int_to_str(++t_k);
         qua.s[0] = s;
         qua.s[1] = SEM[0];
         qua.s[2] = SEM[1];
-        qua.s[3] = "t1";
-        qua_list.push_back(qua);
+        qua.s[3] = tk;
+        out_qua();
         qua.s[0] = "do";
-        qua.s[1] = "t1";
+        qua.s[1] = tk;
         qua.s[2] = "_";
         qua.s[3] = "_";
-        qua_list.push_back(qua);
+        out_qua();
     }
     else if(SEM.size()==1)
     {
@@ -64,7 +67,7 @@ void DO()
         qua.s[1] = SEM[0];
         qua.s[2] = "_";
         qua.s[3] = "_";
-        qua_list.push_back(qua);
+        out_qua();
     }
 
 }
@@ -192,7 +195,7 @@ int fun_while()
 return 1;
 }
 
-void fn_while()
+int fn_while()
 {
     int a = 1;
     reset0();
@@ -200,8 +203,12 @@ void fn_while()
     {
         a = fun_while();
     }
-    if(a==2)
-        cout<<"RIGHT"<<endl;
-    else if(a==0)
-        cout<<"WRONG"<<endl;
+    if(a==2) {
+        //cout<<"RIGHT"<<endl;
+        return 1;
+    }
+    else if(a==0) {
+        //cout<<"WRONG"<<endl;
+        return 0;
+    }
 }
