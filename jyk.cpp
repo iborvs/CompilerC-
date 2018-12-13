@@ -3,13 +3,12 @@
 #include <vector>
 #include <string.h>
 
-
+extern int t_k;   //用来表示算数表达式tk中的k
+extern string tk;
 extern vector<Quadruple> qua_list;
 extern struct Quadruple qua;
 extern vector<Word> words;
 extern int token_i;
-extern int t_k;   //用来表示算数表达式tk中的k
-extern string tk;
 
 vector<string> A;
 vector<string> SEM;
@@ -132,13 +131,13 @@ int fun_while()
         A.pop_back();
         A.push_back("I");
         A.push_back(words[token_i].value);
+        s = words[token_i].value;
         return 1;
     }
     else if(A.back().compare("R'")==0&&words[token_i].type.compare("P")!=0)
     {
         //cout<<"R'->"<<endl;
         A.pop_back();
-        s = words[token_i].value;
         return 1;
     }
     else if(A.back().compare("f")==0)
@@ -203,13 +202,13 @@ int fn_while()
     {
         a = fun_while();
     }
-    if(a==2) {
+    if(a==2){
         //cout<<"RIGHT"<<endl;
-        token_i++;
-        return 1;
-    }
-    else if(a==0) {
+		token_i++;
+		return 1;
+	}
+    else if(a==0){
         //cout<<"WRONG"<<endl;
-        return 0;
-    }
+		return 0;
+	}
 }

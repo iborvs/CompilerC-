@@ -193,7 +193,7 @@ void initL()
     for(i=0; i<qua_list.size(); i++)
         for(j=1; j<4; j++)
         {
-            if(findElem(qua_list[i].s[j])<0)
+            if(findElem(qua_list[i].s[j])<0 && qua_list[i].s[j]!="_")
             {
                 SYMBL symE;
                 symE.name=qua_list[i].s[j];

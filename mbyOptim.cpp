@@ -7,11 +7,13 @@
 //没有其他方面可以借用的函数 可以不看
 using namespace std;
 extern vector<Quadruple> qua_list;
+int qtOut();
+int rebuildQT();
 struct DAGnode
 {
     int n;
-    string ope;
-    string M;
+    string ope="";
+    string M="";
     vector<string>A;
     DAGnode *sblngs[2]= {NULL,NULL};
 };
@@ -164,6 +166,7 @@ int optimization()
                     delA(qua_list[qtI].s[3]);
                 tmpNode.A.push_back(qua_list[qtI].s[3]);
                 DAG.push_back(tmpNode);
+                tmpNode.A.clear();
             }
             else   //存在B则在B上附上A 待优化
             {
@@ -190,6 +193,7 @@ int optimization()
             C=preCompute(C1,C2,qua_list[qtI].s[0]);
             stream1<<C;
             delA(qua_list[qtI].s[3]);
+            //cout<<stream1.str()<<endl;
             int tPos=findPos(stream1.str());
             if(tPos==-1)
             {
@@ -199,9 +203,9 @@ int optimization()
         }
         else if(qua_list[qtI].s[0].size()==1)  //暂定只有运算符是一位 只考虑二元
         {
-            if(ifExist(qua_list[qtI].s[1]))
+            if(!ifExist(qua_list[qtI].s[1]))
                 buildNode(qua_list[qtI].s[1]);
-            if(ifExist(qua_list[qtI].s[2]))
+            if(!ifExist(qua_list[qtI].s[2]))
                 buildNode(qua_list[qtI].s[2]);
             int tPos=findOpPos(qua_list[qtI].s[0]);
             delA(qua_list[qtI].s[3]); //先清空作为附加的所有A
@@ -228,22 +232,43 @@ int optimization()
                     tmpNode.sblngs[0]=&DAG[xyPos[0]];
                 if(ifExist(qua_list[qtI].s[2]))
                     tmpNode.sblngs[1]=&DAG[xyPos[0]];
+                DAG.push_back(tmpNode);
             }
         }
+        qtI++;
     }
+    rebuildQT();
+    qua_list=optdQT;
+    qtOut();
     return 0;
+}
+int qtOut()
+{
+    int i=0;
+    for(i=0; i<qua_list.size(); i++)
+    {
+        cout<<"("<<qua_list[i].s[0]<<","<<qua_list[i].s[1]<<","<<qua_list[i].s[2]<<","<<qua_list[i].s[3]<<")"<<endl;;
+    }
 }
 int rebuildQT()  //输出四元式到新栈
 {
     int i=0,j=0;
     Quadruple tmpQT;
-    for(i=0; i<DAG.size();i++)
+    for(i=0; i<DAG.size(); i++)
     {
-        if(DAG[i].sblngs[0]!=NULL || DAG[i].sblngs[1]!=NULL)
+        if(DAG[i].sblngs[0]!=NULL && DAG[i].sblngs[1]!=NULL)
         {
             tmpQT.s[0]=DAG[i].ope;
             tmpQT.s[1]=DAG[i].sblngs[0]->M;
             tmpQT.s[2]=DAG[i].sblngs[1]->M;
+            tmpQT.s[3]=DAG[i].M;
+            optdQT.push_back(tmpQT);
+        }
+        else if(DAG[i].sblngs[0]!=NULL)
+        {
+            tmpQT.s[0]=DAG[i].ope;
+            tmpQT.s[1]=DAG[i].sblngs[0]->M;
+            tmpQT.s[2]="_";
             tmpQT.s[3]=DAG[i].M;
             optdQT.push_back(tmpQT);
         }
