@@ -8,6 +8,8 @@ extern vector<Quadruple> qua_list;
 extern struct Quadruple qua;
 extern vector<Word> words;
 extern int token_i;
+extern int t_k;   //用来表示算数表达式tk中的k
+extern string tk;
 
 vector<string> A;
 vector<string> SEM;
@@ -33,7 +35,7 @@ void WE()
     qua.s[1] = "_";
     qua.s[2] = "_";
     qua.s[3] = "_";
-    qua_list.push_back(qua);
+    out_qua();
 }
 void WH()
 {
@@ -41,22 +43,23 @@ void WH()
     qua.s[1] = "_";
     qua.s[2] = "_";
     qua.s[3] = "_";
-    qua_list.push_back(qua);
+    out_qua();
 }
 void DO()
 {
     if(SEM.size()==2)
     {
+        tk = "t"+int_to_str(++t_k);
         qua.s[0] = s;
         qua.s[1] = SEM[0];
         qua.s[2] = SEM[1];
-        qua.s[3] = "t1";
-        qua_list.push_back(qua);
+        qua.s[3] = tk;
+        out_qua();
         qua.s[0] = "do";
-        qua.s[1] = "t1";
+        qua.s[1] = tk;
         qua.s[2] = "_";
         qua.s[3] = "_";
-        qua_list.push_back(qua);
+        out_qua();
     }
     else if(SEM.size()==1)
     {
@@ -64,7 +67,7 @@ void DO()
         qua.s[1] = SEM[0];
         qua.s[2] = "_";
         qua.s[3] = "_";
-        qua_list.push_back(qua);
+        out_qua();
     }
 
 }
@@ -73,7 +76,7 @@ int fun_while()
 
     if(A.back().compare("S")==0&&words[token_i].value.compare("while")==0)
     {
-        cout<<"S->W D F"<<endl;
+        //cout<<"S->W D F"<<endl;
         A.pop_back();
         A.push_back("WE");
         A.push_back("F");
@@ -83,7 +86,7 @@ int fun_while()
     }
     else if(A.back().compare("F")==0&&words[token_i].value.compare("{")==0)
     {
-        cout<<"F->{f}"<<endl;
+        //cout<<"F->{f}"<<endl;
         A.pop_back();
         A.push_back("}");
         A.push_back("f");
@@ -92,14 +95,14 @@ int fun_while()
     }
     else if(A.back().compare("F")==0&&words[token_i].value.compare("{")!=0)
     {
-        cout<<"F->f"<<endl;
+        //cout<<"F->f"<<endl;
         A.pop_back();
         A.push_back("f");
         return 1;
     }
     else if(A.back().compare("W")==0)
     {
-        cout<<"W->while"<<endl;
+        //cout<<"W->while"<<endl;
         A.pop_back();
         A.push_back("WH");
         A.push_back("while");
@@ -107,7 +110,7 @@ int fun_while()
     }
     else if(A.back().compare("D")==0&&words[token_i].value.compare("(")==0)
     {
-        cout<<"D->(R)"<<endl;
+        //cout<<"D->(R)"<<endl;
         A.pop_back();
         A.push_back("DO");
         A.push_back(")");
@@ -117,7 +120,7 @@ int fun_while()
     }
     else if(A.back().compare("R")==0&&(words[token_i].type.compare("I")==0||words[token_i].type.compare("c")==0))
     {
-        cout<<"R->I R'"<<endl;
+        //cout<<"R->I R'"<<endl;
         A.pop_back();
         A.push_back("R'");
         A.push_back("I");
@@ -125,7 +128,7 @@ int fun_while()
     }
     else if(A.back().compare("R'")==0&&words[token_i].type.compare("P")==0)
     {
-        cout<<"R'->w I"<<endl;
+        //cout<<"R'->w I"<<endl;
         A.pop_back();
         A.push_back("I");
         A.push_back(words[token_i].value);
@@ -133,7 +136,7 @@ int fun_while()
     }
     else if(A.back().compare("R'")==0&&words[token_i].type.compare("P")!=0)
     {
-        cout<<"R'->"<<endl;
+        //cout<<"R'->"<<endl;
         A.pop_back();
         s = words[token_i].value;
         return 1;
@@ -176,11 +179,11 @@ int fun_while()
         {
           if(A.back().compare(")")==0)
            {
-               cout<<" "<<"D->(R)"<<endl;
+               //cout<<" "<<"D->(R)"<<endl;
            }
            if(A.back().compare("}")==0)
            {
-               cout<<" "<<"F->{f}"<<endl;
+               //cout<<" "<<"F->{f}"<<endl;
            }
             A.pop_back();
             token_i++;
@@ -192,7 +195,7 @@ int fun_while()
 return 1;
 }
 
-void fn_while()
+int fn_while()
 {
     int a = 1;
     reset0();
@@ -200,8 +203,13 @@ void fn_while()
     {
         a = fun_while();
     }
-    if(a==2)
-        cout<<"RIGHT"<<endl;
-    else if(a==0)
-        cout<<"WRONG"<<endl;
+    if(a==2) {
+        //cout<<"RIGHT"<<endl;
+        token_i++;
+        return 1;
+    }
+    else if(a==0) {
+        //cout<<"WRONG"<<endl;
+        return 0;
+    }
 }

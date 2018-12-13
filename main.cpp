@@ -18,6 +18,6 @@ int main()
         cout<<"success"<<endl;
     else
         cout<<"fail"<<endl;
-        runCompil();
+    runCompil();
     //assembly();
 }
