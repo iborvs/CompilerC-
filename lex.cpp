@@ -3,7 +3,9 @@
 using namespace std;
 extern vector<Word> words;
 extern vector<Synbl> synbl;
-extern vector<int> consl;
+extern vector<int> consl; //常数表；
+extern vector<string> const_C; //常字符
+extern vector<string> const_S; //常字符串
 
 int count1 = 0, count2 = 0, count3 = 0, count4 = 0;
 static char K[22][20] = {
@@ -264,19 +266,31 @@ Word state_to_code(int state_before, char token[])
         word.type = "c";
         count4++;
         word.code = count4;
-        //consl.push_back(word.value);
+        int tmp = atoi(word.value.c_str()); //调用atio库函数转string为int
+        vector<int>::iterator result = find(consl.begin(), consl.end(), tmp);
+        if(result == consl.end()) {
+            consl.push_back(tmp);
+        }
         return word;
     }
     else if(state_before == 16) {
         word.type = "C";
         count2++;
         word.code = count2;
+        vector<string>::iterator result = find(const_C.begin(), const_C.end(), word.value);
+        if(result == const_C.end()) {
+            const_C.push_back(word.value);
+        }
         return word;
     }
     else if(state_before == 17) {
         word.type = "S";
         count3++;
         word.code = count3;
+        vector<string>::iterator result = find(const_S.begin(), const_S.end(), word.value);
+        if(result == const_S.end()) {
+            const_S.push_back(word.value);
+        }
         return word;
     }
     else {
@@ -329,7 +343,29 @@ void lex()
     //    cout<<'{'<<words[i].type<<','<<words[i].code<<','<<words[i].value<<'}'<<endl;
     //return words;
     fclose(fp);
+
+    ofstream fout;
+    fout.open("const.txt");
+    fout<<"常数表:"<<endl;
+    for(int i = 0; i < consl.size(); i++) {
+        fout<<consl[i]<<"  ";
+        if(i % 10 == 0 && i != 0)
+            fout<<endl;
+    }
+    fout<<endl<<endl;
+    fout<<"常字符表:"<<endl;
+    for(int i = 0; i < const_C.size(); i++) {
+        fout<<const_C[i]<<"  ";
+        if(i % 10 == 0 && i != 0)
+            fout<<endl;
+    }
+    fout<<endl<<endl;
+    fout<<"常字符串表:"<<endl;
+    for(int i = 0; i < const_S.size(); i++) {
+        fout<<const_S[i]<<"  ";
+        if(i % 10 == 0 && i != 0)
+            fout<<endl;
+    }
+    fout<<endl<<endl;
+    fout.close();
 }
-
-
-

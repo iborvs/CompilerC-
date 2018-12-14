@@ -5,7 +5,9 @@ int runCompil();
 vector<Word> words;  //token序列
 vector<Quadruple> qua_list;  //四元式序列
 vector<Synbl> synbl; //符号表
-vector<string> consl; //常数表；
+vector<int> consl; //常数表；
+vector<string> const_C; //常字符
+vector<string> const_S; //常字符串
 //int token_i = 0;
 //int qua_i;
 
