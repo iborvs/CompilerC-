@@ -3,6 +3,4 @@ obj/
 *.cbp
 *.depend
 *.layout
-program.txt
-quadruple.txt
-symbol.txt
+*.txt
