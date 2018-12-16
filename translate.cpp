@@ -117,6 +117,33 @@ int evaluation()
                         return 1;
                     }
                 }
+                return 0;
+            }
+            else {
+                if(words[token_i].value == ";") {
+                    token_i++;
+                    return 1;
+                }
+            }
+        }
+        return 0;
+    }
+    else {
+        if(id()) {
+            if(words[token_i].value == "=") {
+                string tmp_value = words[token_i-1].value;  //用于定位需要四元式中需要输出的变量
+                token_i++;
+                if(r_value()) {
+                    if(words[token_i].value == ";") {
+                        token_i++;
+                        //四元式
+                        qua.s[0] = "=";
+                        qua.s[3] = tmp_value;
+                        qua.s[2] = "_";
+                        out_qua();
+                        return 1;
+                    }
+                }
             }
         }
     }
