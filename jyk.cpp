@@ -196,6 +196,8 @@ return 1;
 
 int fn_while()
 {
+    if(words[token_i].value.compare("while")!=0)
+        return 0;
     int a = 1;
     reset0();
     while(a==1)
@@ -203,8 +205,9 @@ int fn_while()
         a = fun_while();
     }
     if(a==2){
-        //cout<<"RIGHT"<<endl;
-		token_i++;
+        cout<<"RIGHT"<<endl;
+		//token_i++;
+		cout<<token_i;
 		return 1;
 	}
     else if(a==0){
