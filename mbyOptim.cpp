@@ -2,7 +2,6 @@
 #include <vector>
 #include <sstream>
 #include "head.h"
-#include "stdio.h"
 //四元式优化相关代码 入口是已生成的四元式序列:qua_list
 //出口是同类型的optdQT
 //没有其他方面可以借用的函数 可以不看
@@ -19,14 +18,11 @@ struct DAGnode
     DAGnode *sblngs[2]= {NULL,NULL};
 };
 vector<DAGnode>DAG;
-vector<Quadruple>tmpQTS;  //用于分块的临时四元式
 vector<Quadruple>optdQT; //优化后的四元式
 int xyPos[2]= {-2,-2}; //用于存储ifExists后寻找的二元位置 第二位位-1则是在主元素上
-string divSymbls[7]= {"wh","do","we","if","el","ie","end"};
 float preCompute(float a,float b,string ope)
 {
     float c=0;
-    //cout<<ope[0]<<" "<<a<<" "<<b<<endl;
     switch(ope[0])
     {
     case '+':
@@ -154,72 +150,73 @@ int optimization()
     int i=0,j=0,pos=0; //循环临时变量
     bool exist=false;
     DAGnode tmpNode;
-    while(qtI<tmpQTS.size())
+    while(qtI<qua_list.size())
     {
         exist=false;
-        if(tmpQTS[qtI].s[0]=="=") //A=B 或 A=C1  规范见第八章优化ppt
+        if(qua_list[qtI].s[0]=="=") //A=B 或 A=C1  规范见第八章优化ppt
         {
-            exist=ifExist(tmpQTS[qtI].s[1]);
+            exist=ifExist(qua_list[qtI].s[1]);
             if(!exist)  //不存在B则为B建立节点 然后将节点入栈
             {
                 tmpNode.n=DAG.size()+1;
                 tmpNode.ope="";
-                tmpNode.M=tmpQTS[qtI].s[1];
-                exist=ifExist(tmpQTS[qtI].s[3]);
+                tmpNode.M=qua_list[qtI].s[1];
+                exist=ifExist(qua_list[qtI].s[3]);
                 if(exist)
-                    delA(tmpQTS[qtI].s[3]);
-                tmpNode.A.push_back(tmpQTS[qtI].s[3]);
+                    delA(qua_list[qtI].s[3]);
+                tmpNode.A.push_back(qua_list[qtI].s[3]);
                 DAG.push_back(tmpNode);
                 tmpNode.A.clear();
             }
             else   //存在B则在B上附上A 待优化
             {
-                int Bpos=findPos((tmpQTS[qtI].s[1]));
-                exist=ifExist(tmpQTS[qtI].s[3]);
+                int Bpos=findPos((qua_list[qtI].s[1]));
+                exist=ifExist(qua_list[qtI].s[3]);
                 if(exist)
-                    delA(tmpQTS[qtI].s[3]);
-                DAG[Bpos].A.push_back(tmpQTS[qtI].s[3]);
+                    delA(qua_list[qtI].s[3]);
+                DAG[Bpos].A.push_back(qua_list[qtI].s[3]);
             }
         }
-        else if(ifConst(tmpQTS[qtI].s[1]) && ifConst(tmpQTS[qtI].s[2]))   //A=C1?C2  即第二三位为常数
+        else if(ifConst(qua_list[qtI].s[1]) && ifConst(qua_list[qtI].s[2]))   //A=C1?C2  即第二三位为常数
         {
-            if(!ifExist(tmpQTS[qtI].s[1]))
-                buildNode(tmpQTS[qtI].s[1]);
-            if(!ifExist(tmpQTS[qtI].s[2]))
-                buildNode(tmpQTS[qtI].s[2]);
+            if(!ifExist(qua_list[qtI].s[1]))
+                buildNode(qua_list[qtI].s[1]);
+            if(!ifExist(qua_list[qtI].s[2]))
+                buildNode(qua_list[qtI].s[2]);
             float C,C1,C2;
             stringstream stream1;
-            //stream1<<tmpQTS[qtI].s[1];
-            C1=atof(tmpQTS[qtI].s[1].c_str());
-            //stream1<<tmpQTS[qtI].s[2];
-            C2=atof(tmpQTS[qtI].s[2].c_str());
+            stream1<<qua_list[qtI].s[1];
+            stream1>>C1;
+            stream1<<qua_list[qtI].s[1];
+            stream1>>C2;
             //计算C
-            C=preCompute(C1,C2,tmpQTS[qtI].s[0]);
+            C=preCompute(C1,C2,qua_list[qtI].s[0]);
             stream1<<C;
-            delA(tmpQTS[qtI].s[3]);
+            delA(qua_list[qtI].s[3]);
+            //cout<<stream1.str()<<endl;
             int tPos=findPos(stream1.str());
             if(tPos==-1)
             {
                 tPos=buildNode(stream1.str()); //指向新节点的位置
             }
-            DAG[tPos].A.push_back(tmpQTS[qtI].s[3]);
+            DAG[tPos].A.push_back(qua_list[qtI].s[3]);
         }
-        else if(tmpQTS[qtI].s[0].size()==1)  //暂定只有运算符是一位 只考虑二元
+        else if(qua_list[qtI].s[0].size()==1)  //暂定只有运算符是一位 只考虑二元
         {
-            if(!ifExist(tmpQTS[qtI].s[1]))
-                buildNode(tmpQTS[qtI].s[1]);
-            if(!ifExist(tmpQTS[qtI].s[2]))
-                buildNode(tmpQTS[qtI].s[2]);
-            int tPos=findOpPos(tmpQTS[qtI].s[0]);
-            delA(tmpQTS[qtI].s[3]); //先清空作为附加的所有A
+            if(!ifExist(qua_list[qtI].s[1]))
+                buildNode(qua_list[qtI].s[1]);
+            if(!ifExist(qua_list[qtI].s[2]))
+                buildNode(qua_list[qtI].s[2]);
+            int tPos=findOpPos(qua_list[qtI].s[0]);
+            delA(qua_list[qtI].s[3]); //先清空作为附加的所有A
             if(tPos!=-1)
             {
                 int j=0;
                 for(j=tPos; j<DAG.size(); j++)
                 {
-                    if( findBC(tmpQTS[qtI].s[1],DAG[j].sblngs[0])!=-2 && findBC(tmpQTS[qtI].s[2],DAG[j].sblngs[1]) ) //在操作符节点下自带分别为B和C
+                    if( findBC(qua_list[qtI].s[1],DAG[j].sblngs[0])!=-2 && findBC(qua_list[qtI].s[2],DAG[j].sblngs[1]) ) //在操作符节点下自带分别为B和C
                     {
-                        DAG[j].A.push_back(tmpQTS[qtI].s[0]); //把A附加上去
+                        DAG[j].A.push_back(qua_list[qtI].s[0]); //把A附加上去
                         tPos=-2;
                         break;
                     }
@@ -227,13 +224,13 @@ int optimization()
             }
             if(tPos!=-2)  //未完成A附加操作 即没有符合条件的式子
             {
-                tmpNode.M=tmpQTS[qtI].s[3];
-                tmpNode.ope=tmpQTS[qtI].s[0];
+                tmpNode.M=qua_list[qtI].s[3];
+                tmpNode.ope=qua_list[qtI].s[0];
                 tmpNode.n=DAG.size()+1;
                 //B和C的位置
-                if(ifExist(tmpQTS[qtI].s[1]))
+                if(ifExist(qua_list[qtI].s[1]))
                     tmpNode.sblngs[0]=&DAG[xyPos[0]];
-                if(ifExist(tmpQTS[qtI].s[2]))
+                if(ifExist(qua_list[qtI].s[2]))
                     tmpNode.sblngs[1]=&DAG[xyPos[0]];
                 DAG.push_back(tmpNode);
             }
@@ -241,18 +238,16 @@ int optimization()
         qtI++;
     }
     rebuildQT();
-    //tmpQTS.clear();
-    vector <Quadruple>().swap(tmpQTS);
-    //tmpQTS=optdQT;
-    //qtOut();
+    qua_list=optdQT;
+    qtOut();
     return 0;
 }
 int qtOut()
 {
     int i=0;
-    for(i=0; i<optdQT.size(); i++)
+    for(i=0; i<qua_list.size(); i++)
     {
-        cout<<"("<<optdQT[i].s[0]<<","<<optdQT[i].s[1]<<","<<optdQT[i].s[2]<<","<<optdQT[i].s[3]<<")"<<endl;;
+        cout<<"("<<qua_list[i].s[0]<<","<<qua_list[i].s[1]<<","<<qua_list[i].s[2]<<","<<qua_list[i].s[3]<<")"<<endl;;
     }
 }
 int rebuildQT()  //输出四元式到新栈
@@ -279,51 +274,12 @@ int rebuildQT()  //输出四元式到新栈
         }
         for(j=0; j<DAG[i].A.size(); j++)
         {
-            if(DAG[i].A[j][0]!='t')
-            {
-                tmpQT.s[0]="=";
-                tmpQT.s[1]=DAG[i].M;
-                tmpQT.s[2]="_";
-                tmpQT.s[3]=DAG[i].A[j];
-                optdQT.push_back(tmpQT);
-            }
-        }
-    }
-    vector <DAGnode>().swap(DAG);
-    return 0;
-}
-bool ifDiv(string str)
-{
-    bool re=false;
-    int i=0;
-    for(i=0; i<7; i++) //长度寻求
-    {
-        if(divSymbls[i]==str)
-        {
-            re=true;
-            break;
-        }
-    }
-    return re;
-}
-int divBlock()
-{
-    int QTI=0;
-    Quadruple tmpQT;
-    for(QTI=0; QTI<qua_list.size(); QTI++)
-    {
-        tmpQT=qua_list[QTI];
-        if(ifDiv(qua_list[QTI].s[0]))
-        {
-            if(tmpQTS.size()!=0)
-                optimization();
+            tmpQT.s[0]="=";
+            tmpQT.s[1]=DAG[i].M;
+            tmpQT.s[2]="_";
+            tmpQT.s[3]=DAG[i].A[j];
             optdQT.push_back(tmpQT);
         }
-        else
-        {
-            tmpQTS.push_back(tmpQT);
-        }
     }
-    qtOut();
     return 0;
 }
