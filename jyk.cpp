@@ -3,13 +3,14 @@
 #include <vector>
 #include <string.h>
 
-extern int t_k;   //鐢ㄦ潵琛ㄧず绠楁暟琛ㄨ揪寮弔k涓殑k
+extern int t_k;   //用来表示算数表达式tk中的k
 extern string tk;
 extern vector<Quadruple> qua_list;
 extern struct Quadruple qua;
 extern vector<Word> words;
 extern int token_i;
 
+int syn0 = 0;
 vector<string> A;
 vector<string> SEM;
 
@@ -22,8 +23,6 @@ while(!A.empty())
     {
         A.pop_back();
     }
-    A.push_back("#");
-    A.push_back("S");
 }
 
 void PU(string s)
@@ -48,12 +47,12 @@ void WH()
 }
 void DO()
 {
-    if(SEM.size()==2)
+    if(SEM.size()>=2)
     {
         tk = "t"+int_to_str(++t_k);
         qua.s[0] = s;
-        qua.s[1] = SEM[0];
-        qua.s[2] = SEM[1];
+        qua.s[1] = SEM[SEM.size()-2];
+        qua.s[2] = SEM.back();
         qua.s[3] = tk;
         out_qua();
         qua.s[0] = "do";
@@ -61,6 +60,8 @@ void DO()
         qua.s[2] = "_";
         qua.s[3] = "_";
         out_qua();
+        SEM.pop_back();
+        SEM.pop_back();
     }
     else if(SEM.size()==1)
     {
@@ -69,6 +70,7 @@ void DO()
         qua.s[2] = "_";
         qua.s[3] = "_";
         out_qua();
+        SEM.pop_back();
     }
 }
 void GEQ(string ss)
@@ -268,7 +270,10 @@ int fun_while()
         return 1;
     }
     else if(A.back().compare("#")==0)
-        return 2;
+        {
+            A.pop_back();
+            return 2;
+        }
     else{
         if(A.back().compare(words[token_i].value)==0)
         {
@@ -294,12 +299,24 @@ int fn_while()
 {
     if(words[token_i].value.compare("while")!=0)
         return 0;
+    else
+    {
+            A.push_back("#");
+            A.push_back("S");
+    }
     int a = 1;
-    reset0();
+    if(syn0==0)
+    {
+        reset0();
+        A.push_back("#");
+        A.push_back("S");
+        syn0++;
+    }
+
     while(a==1)
     {
         a = fun_while();
-        /*
+		/*
         for(int i=0;i<A.size();i++)
         {
             cout<<A[i];

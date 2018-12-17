@@ -21,7 +21,6 @@ struct Quadruple
 //符号表
 struct Arr
 {
-    //int up  //因为C语言数组下界为0，所以省略
     int up;
     string elem_type;
     int length;
