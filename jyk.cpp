@@ -3,7 +3,7 @@
 #include <vector>
 #include <string.h>
 
-extern int t_k;   //用来表示算数表达式tk中的k
+extern int t_k;   //鐢ㄦ潵琛ㄧず绠楁暟琛ㄨ揪寮弔k涓殑k
 extern string tk;
 extern vector<Quadruple> qua_list;
 extern struct Quadruple qua;
@@ -14,6 +14,8 @@ vector<string> A;
 vector<string> SEM;
 
 string s = "";
+string ss = "";
+string connect="";
 void reset0()
 {
 while(!A.empty())
@@ -68,7 +70,21 @@ void DO()
         qua.s[3] = "_";
         out_qua();
     }
-
+}
+void GEQ(string ss)
+{
+    string b[2]={""};
+    b[0] = SEM.back();
+    SEM.pop_back();
+    b[1] = SEM.back();
+    SEM.pop_back();
+    tk = "t"+int_to_str(++t_k);
+    qua.s[0] = ss;
+    qua.s[1] = b[1];
+    qua.s[2] = b[0];
+    qua.s[3] = tk;
+    SEM.push_back(tk);
+    out_qua();
 }
 int fun_while()
 {
@@ -117,27 +133,93 @@ int fun_while()
         A.push_back("(");
         return 1;
     }
-    else if(A.back().compare("R")==0&&(words[token_i].type.compare("I")==0||words[token_i].type.compare("c")==0))
+    else if(A.back().compare("R")==0)
     {
         //cout<<"R->I R'"<<endl;
         A.pop_back();
         A.push_back("R'");
-        A.push_back("I");
+        A.push_back("E");
         return 1;
     }
-    else if(A.back().compare("R'")==0&&words[token_i].type.compare("P")==0)
+    else if(A.back().compare("R'")==0&&(words[token_i].value.compare(">")==0||words[token_i].value.compare("<")==0||words[token_i].value.compare("==")==0||words[token_i].value.compare(">=")==0||words[token_i].value.compare("<=")==0))
     {
         //cout<<"R'->w I"<<endl;
         A.pop_back();
-        A.push_back("I");
+        A.push_back("E");
         A.push_back(words[token_i].value);
         s = words[token_i].value;
         return 1;
     }
-    else if(A.back().compare("R'")==0&&words[token_i].type.compare("P")!=0)
+    else if(A.back().compare("R'")==0&&words[token_i].value.compare(">")!=0&&words[token_i].value.compare("<")!=0&&words[token_i].value.compare("==")!=0&&words[token_i].value.compare(">=")!=0&&words[token_i].value.compare("<=")!=0)
     {
         //cout<<"R'->"<<endl;
         A.pop_back();
+        return 1;
+    }
+    else if(A.back().compare("E")==0)
+    {
+        //cout<<"E->T E'"<<endl;
+        A.pop_back();
+        A.push_back("E'");
+        A.push_back("T");
+        return 1;
+    }
+    else if(A.back().compare("E'")==0&&(words[token_i].value.compare("+")==0||words[token_i].value.compare("-")==0))
+    {
+        //cout<<"E'->w0 T E'"<<endl;
+        connect = "GEQ"+words[token_i].value;
+        A.pop_back();
+        A.push_back("E'");
+        A.push_back(connect);
+        A.push_back("T");
+        A.push_back(words[token_i].value);
+        return 1;
+    }
+    else if(A.back().compare("E'")==0&&words[token_i].value.compare("+")!=0&&words[token_i].value.compare("-")!=0)
+    {
+        //cout<<"E'->e"<<endl;
+        A.pop_back();
+        return 1;
+    }
+    else if(A.back().compare("T")==0)
+    {
+        //cout<<"T->P T'"<<endl;
+        A.pop_back();
+        A.push_back("T'");
+        A.push_back("P");
+        return 1;
+    }
+    else if(A.back().compare("T'")==0&&(words[token_i].value.compare("*")==0||words[token_i].value.compare("/")==0))
+    {
+        //cout<<"T'->w1 P T'"<<endl;
+        connect = "GEQ"+words[token_i].value;
+        A.pop_back();
+        A.push_back("T'");
+        A.push_back(connect);
+        A.push_back("P");
+        A.push_back(words[token_i].value);
+        return 1;
+    }
+     else if(A.back().compare("T'")==0&&words[token_i].value.compare("*")!=0&&words[token_i].value.compare("/")!=0)
+    {
+        //cout<<"T'->e"<<endl;
+        A.pop_back();
+        return 1;
+    }
+     else if(A.back().compare("P")==0&&(words[token_i].type.compare("I")==0||words[token_i].type.compare("c")==0))
+    {
+        //cout<<"P->I'"<<endl;
+        A.pop_back();
+        A.push_back("I");
+        return 1;
+    }
+     else if(A.back().compare("P")==0&&words[token_i].value.compare("(")==0)
+    {
+        //cout<<"P->(E)'"<<endl;
+        A.pop_back();
+        A.push_back(")");
+        A.push_back("E");
+        A.push_back("(");
         return 1;
     }
     else if(A.back().compare("f")==0)
@@ -162,6 +244,20 @@ int fun_while()
     {
         A.pop_back();
         DO();
+        return 1;
+    }
+    else if(A.back().compare("GEQ+")==0||A.back().compare("GEQ-")==0||A.back().compare("GEQ*")==0||A.back().compare("GEQ/")==0)
+    {
+
+        if(A.back().compare("GEQ+")==0)
+            GEQ("+");
+        else if(A.back().compare("GEQ-")==0)
+            GEQ("-");
+        else if(A.back().compare("GEQ*")==0)
+            GEQ("*");
+        else if(A.back().compare("GEQ/")==0)
+            GEQ("/");
+        A.pop_back();
         return 1;
     }
     else if(A.back().compare("I")==0&&(words[token_i].type.compare("I")==0||words[token_i].type.compare("c")==0))
@@ -203,15 +299,26 @@ int fn_while()
     while(a==1)
     {
         a = fun_while();
+        /*
+        for(int i=0;i<A.size();i++)
+        {
+            cout<<A[i];
+        }
+        cout<<"\t";
+        for(int i=0;i<SEM.size();i++)
+        {
+            cout<<SEM[i];
+        }
+        cout<<endl;*/
     }
     if(a==2){
-        cout<<"RIGHT"<<endl;
+        //cout<<"RIGHT"<<endl;
 		//token_i++;
-		cout<<token_i;
+		//cout<<token_i;
 		return 1;
 	}
     else if(a==0){
-        //cout<<"WRONG"<<endl;
+        cout<<"WRONG"<<endl;
 		return 0;
 	}
 }
