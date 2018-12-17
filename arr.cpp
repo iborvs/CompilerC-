@@ -3,84 +3,81 @@
 using namespace std;
 extern vector<Word> words;
 extern vector<Quadruple> qua_list;
-extern vector<Synbl> synbl;
+extern vector<vector<Synbl> > sbl;
+extern vector<Arr> arrs;
 extern struct Quadruple qua;
 extern struct Synbl symbol;
+struct Arr ar;
 extern int token_i;
-extern int symbol_i;
 extern int t_k;   //用来表示算数表达式tk中的k
 extern string tk;
+int arr_i = 0;
+ofstream fout;
 
 int arr()
 {
+    fout.open("arr_table.txt");
+    fout<<"名字"<<"\t"<<"类型"<<"\t"<<"地址"<<"\t"<<"上界"<<"\t"<<"长度"<<endl;
     if(type()) {
         if(id()) {
             if(words[token_i].value == "[") {
 
+                ar.name = words[token_i-1].value;
+                ar.type = words[token_i-2].value;
                 int flag = 0;
-                for(int i = 0; i < synbl.size(); i++) {
-                    if(words[token_i-1].value == synbl[i].name)
+                for(int i = 0; i < 4; i++) {
+                    for(int j = 0; j < sbl[i].size(); j++) {
+                        if(sbl[i][j].name == ar.name) {
+                            flag = 1;
+                            break;
+                        }
+                    }
+                }
+                for(int i = 0; i < arrs.size(); i++) {
+                    if(arrs[i].name == ar.name) {
                         flag = 1;
+                        break;
+                    }
                 }
                 if(flag == 1) {
                     cout<<"变量重定义"<<endl;
                     return 0;
                 }
-
-                symbol.name = words[token_i-1].value;
-
                 token_i++;
                 if(words[token_i].type == "c") {
 
                      //符号表
-                    symbol.ar.elem_type = symbol.type;
-                    symbol.type = "arr";
-                    symbol.cat = "v";
                     int k = atoi(words[token_i].value.c_str());
-                    symbol.ar.up = k;
-                    if(symbol.ar.elem_type == "int")
-                        symbol.ar.length = symbol.ar.up*8;
-                    else if(symbol.ar.elem_type == "char")
-                        symbol.ar.length = symbol.ar.up*2;
-                    else if(symbol.ar.elem_type == "bool")
-                        symbol.ar.length = symbol.ar.up*2;
+                    ar.up = k;
+                    if(ar.type == "int")
+                        ar.length = ar.up*8;
+                    else if(ar.type == "char")
+                        ar.length = ar.up*2;
+                    else if(ar.type == "bool")
+                        ar.length = ar.up*2;
                     else
                         return 0;
-                    if(symbol_i == 0)
-                        symbol.addr = "0";
+                    if(arr_i == 0)
+                        symbol.addr = 0;
                     else {
-                        string str = synbl[symbol_i-1].type;
-                        int len;
-                        if(str == "arr") {
-                            len = synbl[symbol_i-1].ar.length;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
-                        }
+                        string str = arrs[arr_i-1].type;
                         if(str == "int") {
-                            len = 8;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
+                            ar.addr = arrs[arr_i-1].addr + arrs[arr_i-1].length;
                         }
                         else if(str == "char") {
-                            len = 2;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
+                            ar.addr = arrs[arr_i-1].addr + arrs[arr_i-1].length;
                         }
                         else if(str == "bool") {
-                            len = 2;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
-                        }
-                        else if(str == "void") {
-                            len = 4;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
+                            ar.addr = arrs[arr_i-1].addr + arrs[arr_i-1].length;
                         }
                         else
                             return 0;
                     }
-                    out_symbol();
-                    symbol_i++;
+
+                    arrs.push_back(ar);
+                    fout<<ar.name<<"\t"<<ar.type<<"\t"<<ar.addr<<"\t"<<ar.up<<"\t"<<ar.length<<endl;
+
+                    arr_i++;
                     //完成符号表
 
                     token_i++;
@@ -102,12 +99,22 @@ int arr()
 
             //符号表中检查
             int flag = 0;
-            for(int i = 0; i < synbl.size(); i++) {
-                if(words[token_i-1].value == synbl[i].name)
+            for(int i = 0; i < 4; i++) {
+                for(int j = 0; j < sbl[i].size(); j++) {
+                    if(sbl[i][j].name == symbol.name) {
+                        flag = 1;
+                        break;
+                    }
+                }
+            }
+            for(int i = 0; i < arrs.size(); i++) {
+                if(arrs[i].name == symbol.name) {
                     flag = 1;
+                    break;
+                }
             }
             if(flag == 0) {
-                cout<<"变量还未被声明"<<endl;
+                cout<<"变量还未声明"<<endl;
                 return 0;
             }
             //符号表中检查结束

@@ -4,13 +4,12 @@ using namespace std;
 extern vector<Word> words;
 //int flag = 0; //中途是否出错标志
 extern vector<Quadruple> qua_list;
-extern vector<Synbl> synbl;
 struct Quadruple qua;
 struct Synbl symbol;
 int token_i = 0;
-int symbol_i = 0;
 ofstream fout1;
 ofstream fout2;
+ofstream fout3;
 int t_k = 0;   //用来表示算数表达式tk中的k
 string tk;
 //四元式存到qua_list和文件
@@ -27,22 +26,12 @@ void out_qua()
     qua_list.push_back(qua);
     fout1<<"("<<qua.s[0]<<","<<qua.s[1]<<","<<qua.s[2]<<","<<qua.s[3]<<")"<<endl;
 }
-//符号表存到synbl和文件
-void out_symbol()
-{
-    synbl.push_back(symbol);
-    if(symbol.type != "arr")
-        fout2<<symbol.name<<"\t"<<symbol.type<<"\t"<<symbol.cat<<"\t"<<symbol.addr<<endl;
-    else
-        fout2<<symbol.name<<"\t"<<symbol.type<<"\t"<<symbol.cat<<"\t"<<symbol.addr<<
-            "\t"<<symbol.ar.elem_type<<"\t"<<"  "<<symbol.ar.up<<"\t"<<"    "<<symbol.ar.length<<endl;
-}
 
 
 int type()
 {
     string s = words[token_i].value;
-    if(s == "int" || s == "void" || s == "char" || s == "float" || s == "bool") {
+    if(s == "int" || s == "char" || s == "float" || s == "bool") {
         symbol.type = s;
         token_i++;
         return 1;
@@ -113,55 +102,10 @@ int evaluation()
         if(id()) {
             if(words[token_i].value == "=") {
 
-                //填符号表
-                int flag = 0;
-                for(int i = 0; i < synbl.size(); i++) {
-                    if(words[token_i-1].value == synbl[i].name)
-                        flag = 1;
-                }
-                if(flag == 1) {
-                    cout<<"变量重定义"<<endl;
-                    return 0;
-                }
-                symbol.ar.elem_type = "none";
-                symbol.ar.up = 0;
-                symbol.ar.length = 0;
                 symbol.name = words[token_i-1].value;
-                symbol.cat = "v";
-                if(symbol_i == 0)
-                    symbol.addr = "0";
-                else {
-                    string str = synbl[symbol_i-1].type;
-                    int len;
-                    if(str == "arr") {
-                        len = synbl[symbol_i-1].ar.length;
-                        int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                        symbol.addr = int_to_str(k);
-                    }
-                    else if(str == "int") {
-                        len = 8;
-                        int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                        symbol.addr = int_to_str(k);
-                    }
-                    else if(str == "char") {
-                        len = 2;
-                        int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                        symbol.addr = int_to_str(k);
-                    }
-                    else if(str == "bool") {
-                        len = 2;
-                        int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                        symbol.addr = int_to_str(k);
-                    }
-                    else if(str == "void") {
-                        len = 4;
-                        int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                        symbol.addr = int_to_str(k);
-                    }
-                    else
-                        return 0;
-                }
-                //填完符号表
+                if(re_def())
+                    return 0;
+                fill_symbol();
 
                 string tmp_value = words[token_i-1].value;  //用于定位需要四元式中需要输出的变量
                 token_i++;
@@ -173,9 +117,6 @@ int evaluation()
                         qua.s[3] = tmp_value;
                         qua.s[2] = "_";
                         out_qua();
-                        //符号表
-                        out_symbol();
-                        symbol_i++;
                         return 1;
                     }
                 }
@@ -184,58 +125,8 @@ int evaluation()
             else {
                 if(words[token_i].value == ";") {
 
-                    //填符号表
-                    int flag = 0;
-                    for(int i = 0; i < synbl.size(); i++) {
-                        if(words[token_i-1].value == synbl[i].name)
-                            flag = 1;
-                    }
-                    if(flag == 1) {
-                        cout<<"变量重定义"<<endl;
-                        return 0;
-                    }
-                    symbol.ar.elem_type = "none";
-                    symbol.ar.up = 0;
-                    symbol.ar.length = 0;
-                    symbol.name = words[token_i-1].value;
-                    symbol.cat = "v";
-                    if(symbol_i == 0)
-                        symbol.addr = "0";
-                    else {
-                        string str = synbl[symbol_i-1].type;
-                        int len;
-                        if(str == "arr") {
-                            len = synbl[symbol_i-1].ar.length;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
-                        }
-                        else if(str == "int") {
-                            len = 8;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
-                        }
-                        else if(str == "char") {
-                            len = 2;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
-                        }
-                        else if(str == "bool") {
-                            len = 2;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
-                        }
-                        else if(str == "void") {
-                            len = 4;
-                            int k = atoi(synbl[symbol_i-1].addr.c_str()) + len;
-                            symbol.addr = int_to_str(k);
-                        }
-                        else
-                            return 0;
-                    }
-                    //填完符号表
+                    fill_symbol();
 
-                    out_symbol();
-                    symbol_i++;
                     token_i++;
                     return 1;
                 }
@@ -247,17 +138,9 @@ int evaluation()
         if(id()) {
             if(words[token_i].value == "=") {
 
-                //符号表中检查
-                int flag = 0;
-                for(int i = 0; i < synbl.size(); i++) {
-                    if(words[token_i-1].value == synbl[i].name)
-                        flag = 1;
-                }
-                if(flag == 0) {
-                    cout<<"变量还未被声明"<<endl;
+                symbol.name = words[token_i-1].value;
+                if(un_def())
                     return 0;
-                }
-                //符号表中检查结束
 
                 string tmp_value = words[token_i-1].value;  //用于定位需要四元式中需要输出的变量
                 token_i++;
@@ -312,7 +195,7 @@ int factor()
         qua.s[1] = words[token_i-1].value;
         return 1;
     }
-    else if(words[token_i].type == "c") {
+    else if(words[token_i].type == "c" || words[token_i].type == "C" || words[token_i].type == "S") {
         qua.s[1] = words[token_i].value;
         token_i++;
         return 1;
@@ -364,9 +247,7 @@ int fn()
 int translate()
 {
     fout1.open("quadruple.txt");
-    fout2.open("symbol.txt");
-    fout2<<"变量名"<<"\t"<<"类型"<<"\t"<<"种类"<<"\t"<<"地址"<<
-            "\t"<<"元素类型"<<"  "<<"数组上界"<<"  "<<"空间大小"<<endl;
+    fout3.open("symbol.txt");
     if(fn()) {
         fout1.close();
         fout2.close();

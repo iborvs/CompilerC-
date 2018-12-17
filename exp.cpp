@@ -41,7 +41,7 @@ bool mate(string st_top, string w)
 {
     if(st_top=="i"&&((isalpha(w[0])||isdigit(w[0]))&&w!="E"&&w!="T"&&w!="F")) return true;
     if(st_top == "w1" && (w == "+" || w == "-")) return true;
-    if(st_top == "w2" && (w == "*" || w == "/")) return true;
+    if(st_top == "w2" && (w == "*" || w == "/" || w == "%")) return true;
     //if(st_top == "(" && w == "(") return true;
     //if(st_top == ")" && w == ")") return true;
     //if(st_top == ";" && w == ";") return true;
@@ -239,7 +239,7 @@ int exp()
     int flag = 0;        //如果中途碰到+-*/认为是个表达式，否则只是个标识符
     for(; ; token_i++) {
         string str = words[token_i].value;
-        if(str == "+" || str == "-" || str == "*" || str == "/") {
+        if(str == "+" || str == "-" || str == "*" || str == "/" || str == "%") {
             flag = 1;
         }
         int x = action(syn.top().state, str);
