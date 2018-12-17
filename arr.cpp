@@ -97,7 +97,7 @@ int arr()
         }
     }
     else if(id()) {
-        string s2 = words[token_i-1].value;
+        string s3 = words[token_i-1].value;
         if(words[token_i].value == "[") {
 
             //·ûºÅ±íÖÐ¼ì²é
@@ -114,7 +114,7 @@ int arr()
 
             token_i++;
             if(words[token_i].type == "c" || words[token_i].type == "I") {
-                string s3 = words[token_i].value;
+                string s2 = words[token_i].value;
                 token_i++;
                 if(words[token_i].value == "]") {
                     token_i++;

@@ -45,6 +45,7 @@ int fn_if()
                                     if(words[token_i].value == "else") {
                                         token_i++;
                                         if(words[token_i].value == "{") {
+                                            token_i++;
                                             qua.s[0] = "el";
                                             qua.s[1] = "_";
                                             qua.s[2] = "_";
@@ -52,12 +53,12 @@ int fn_if()
                                             out_qua();
                                             fn_body();
                                             if(words[token_i].value == "}") {
+                                                token_i++;
                                                 qua.s[0] = "ie";
                                                 qua.s[1] = "_";
                                                 qua.s[2] = "_";
                                                 qua.s[3] = "_";
                                                 out_qua();
-                                                token_i++;
                                                 return 1;
                                             }
                                         }
