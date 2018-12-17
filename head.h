@@ -19,20 +19,20 @@ struct Quadruple
 };
 
 //符号表
+struct Arr
+{
+    //int up  //因为C语言数组下界为0，所以省略
+    int up;
+    string elem_type;
+    int length;
+};
 struct Synbl
 {
     string name;
     string type;
     string cat;
     string addr;
-};
-struct Arr
-{
-    //int up  //因为C语言数组下界为0，所以省略
-    string name;
-    int up;
-    string elem_type;
-    int length;
+    struct Arr ar;
 };
 /*
 struct Typel  //只扩充数组，结构体等不扩充，所以类型表没用
@@ -84,9 +84,11 @@ int id();
 int type();
 void out_qua();
 string int_to_str(int& k);
+void out_symbol();
 
 int exp();
 int fn_while();
 int fn_if();
+int arr();
 
 #endif // HEAD_H_INCLUDED

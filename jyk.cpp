@@ -3,7 +3,7 @@
 #include <vector>
 #include <string.h>
 
-extern int t_k;   //用来表示算数表达式tk中的k
+extern int t_k;   //鐢ㄦ潵琛ㄧず绠楁暟琛ㄨ揪寮弔k涓殑k
 extern string tk;
 extern vector<Quadruple> qua_list;
 extern struct Quadruple qua;

@@ -15,9 +15,9 @@ static char K[22][20] = {
     "switch", "case", "default", "return", "const",
     "string"
 };
-static char P[19][10] = {
+static char P[20][10] = {
     ">=", "<=", "==", "=", ">", "<", "+", "-", "*", "/",
-    "{", "}", ".", ";", "(", ")", ",", "[", "]"
+    "{", "}", ".", ";", "(", ")", ",", "[", "]", "%"
 };
 vector<string> I;
 
@@ -226,7 +226,7 @@ Word search(char token[])
             return word;
         }
     }
-    for(int i = 0; i<19; i++) {
+    for(int i = 0; i < 20; i++) {
         if(strcmp(P[i], token) == 0) {
             word.type = "P";
             word.code = i + 1;
