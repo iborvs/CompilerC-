@@ -92,8 +92,8 @@ int arr();
 //·ûºÅ±í
 void fill_symbol();
 void out_symbol();
-int un_def();
-int re_def();
+int un_def(string name);
+int re_def(string name);
 void file_symbol();
 
 #endif // HEAD_H_INCLUDED

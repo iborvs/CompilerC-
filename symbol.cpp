@@ -62,19 +62,19 @@ void fill_symbol()
     }
 }
 
-int re_def()
+int re_def(string name)
 {
     int flag = 0;
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < sbl[i].size(); j++) {
-            if(sbl[i][j].name == symbol.name) {
+            if(sbl[i][j].name == name) {
                 flag = 1;
                 break;
             }
         }
     }
     for(int i = 0; i < arrs.size(); i++) {
-        if(arrs[i].name == symbol.name) {
+        if(arrs[i].name == name) {
             flag = 1;
             break;
         }
@@ -86,19 +86,19 @@ int re_def()
     return 0;
 }
 
-int un_def()
+int un_def(string name)
 {
     int flag = 0;
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < sbl[i].size(); j++) {
-            if(sbl[i][j].name == symbol.name) {
+            if(sbl[i][j].name == name) {
                 flag = 1;
                 break;
             }
         }
     }
     for(int i = 0; i < arrs.size(); i++) {
-        if(arrs[i].name == symbol.name) {
+        if(arrs[i].name == name) {
             flag = 1;
             break;
         }

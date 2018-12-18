@@ -103,7 +103,7 @@ int evaluation()
             if(words[token_i].value == "=") {
 
                 symbol.name = words[token_i-1].value;
-                if(re_def())
+                if(re_def(words[token_i-1].value))
                     return 0;
                 fill_symbol();
 
@@ -125,6 +125,8 @@ int evaluation()
             else {
                 if(words[token_i].value == ";") {
 
+                    if(re_def(words[token_i-1].value))
+                        return 0;
                     fill_symbol();
 
                     token_i++;
@@ -139,7 +141,7 @@ int evaluation()
             if(words[token_i].value == "=") {
 
                 symbol.name = words[token_i-1].value;
-                if(un_def())
+                if(un_def(words[token_i-1].value))
                     return 0;
 
                 string tmp_value = words[token_i-1].value;  //用于定位需要四元式中需要输出的变量
