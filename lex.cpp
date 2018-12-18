@@ -316,7 +316,7 @@ void parse(Word word)
 void lex()
 {
     FILE *fp;
-    if((fp = fopen("program.txt", "r")) == NULL) {
+    if((fp = fopen("prime.txt", "r")) == NULL) {
         cout<<"can't open the file";
         exit(0);
     }
