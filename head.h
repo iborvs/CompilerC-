@@ -21,8 +21,10 @@ struct Quadruple
 //符号表
 struct Arr
 {
+    string name;
+    string type;
+    int addr;
     int up;
-    string elem_type;
     int length;
 };
 struct Synbl
@@ -30,8 +32,7 @@ struct Synbl
     string name;
     string type;
     string cat;
-    string addr;
-    struct Arr ar;
+    int addr;
 };
 /*
 struct Typel  //只扩充数组，结构体等不扩充，所以类型表没用
@@ -67,7 +68,6 @@ Word search(char token[]);
 Word state_to_code(int state_before, char token[]);
 void reset(char ch, char token[], FILE *fp, int &state, int &j);
 void parse(Word word);
-void lex();
 
 
 //语法分析
@@ -83,11 +83,17 @@ int id();
 int type();
 void out_qua();
 string int_to_str(int& k);
-void out_symbol();
 
 int exp();
 int fn_while();
 int fn_if();
 int arr();
+
+//符号表
+void fill_symbol();
+void out_symbol();
+int un_def(string name);
+int re_def(string name);
+void file_symbol();
 
 #endif // HEAD_H_INCLUDED

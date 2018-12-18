@@ -2,13 +2,12 @@
 #include"head.h"
 using namespace std;
 extern vector<Word> words;
-extern vector<Synbl> synbl;
 extern vector<int> consl; //常数表；
 extern vector<string> const_C; //常字符
 extern vector<string> const_S; //常字符串
 
 int count1 = 0, count2 = 0, count3 = 0, count4 = 0;
-static char K[22][20] = {
+static char K[23][50] = {
     "int", "main", "void", "if", "else", "char",
     "double", "enum", "float", "struct", "for",
     "do", "while", "break", "continue", "goto",
@@ -302,7 +301,8 @@ Word state_to_code(int state_before, char token[])
 }
 void reset(char ch, char token[], FILE *fp, int &state, int &j)
 {
-    memset(token, 0, sizeof(token));
+    for(int i = 0; i < 20; i++)
+        token[i] = '\0';
     if(ch != '\n' && ch != '\r' && ch != '\v' && ch != '\t' && ch != ' ')
         fseek(fp, -1, SEEK_CUR);
     state = 1;
@@ -322,7 +322,8 @@ void lex()
     }
     int state = 1, state_before;
     char token[20];
-    memset(token, 0, sizeof(token));
+    for(int i = 0; i < 20; i++)
+        token[i] = '\0';
     char ch;
     int i = 0, j = 0;
     while((ch = getc(fp)) != '#') {
