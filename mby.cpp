@@ -83,6 +83,44 @@ string addrToType(int i) //根据十六进制数位转换所需单元大小类型
     }
     return str;
 }
+string nameToAddr(string str) //根据变量名称寻找其在数据段中的地址
+{
+    string addr="",vType="";
+    stringstream stream1;
+    int intAddr=-1,xNum; //xnum用于类型转换
+    int i=0,j=0;
+    if( (str[0]-'0')<=9 && (str[0]-'0')>=0) //检查是否为常数
+        return str;
+    for(i=0; i<str.size(); i++) //检查是否为数组
+        if(str[i]=='[')
+        {
+            addr="["+str.substr(0,i)+"+"+nameToAddr(str.substr(i+1))+"*8]";
+            return addr;
+        }
+    for(i=0; i<sbl.size(); i++)
+    {
+        for(j=0; j<sbl[i].size(); j++)
+        {
+            if(sbl[i][j].name==str)
+            {
+                intAddr=sbl[i][j].addr;
+                vType=sbl[i][j].type+"S";
+                break;
+            }
+        }
+    }
+    if(intAddr>=0)
+    {
+        stream1<<intAddr;
+        addr=stream1.str();
+        addr="["+vType+"+"+addr+"]";
+    }
+    else
+    {
+        addr=str;
+    }
+    return addr;
+}
 int ifSybCodes(QT qtEq,int i) //判断大小的算符编成
 {
     string tmpJMP,tmpStr;
@@ -104,10 +142,10 @@ int ifSybCodes(QT qtEq,int i) //判断大小的算符编成
     {
         if(rGroup[0]!="")
         {
-            iCmpFn("        ST R,"+rGroup[0]);
+            iCmpFn("        MOV "+nameToAddr(rGroup[0])+",EAX");
             rGroup[0]="";
         }
-        tmpStr="        MOV R,"+qtEq.s[1].name+" "+tmpJMP+" "+qtEq.s[2].name;
+        tmpStr="        MOV EAX,"+nameToAddr(qtEq.s[1].name) +" "+tmpJMP+" "+nameToAddr(qtEq.s[2].name);
         iCmpFn(tmpStr);
         rGroup[0]=qtEq.s[3].name;
         qtPos[0]=i;
@@ -148,7 +186,15 @@ bool buildCSEG()
     cmpCode.push_back(tmpStr);
     tmpStr="        ASSUME  CS:CSEG,DS:DSEG";
     cmpCode.push_back(tmpStr);
+    tmpStr="START: 	MOV AX,DSEG";
+    cmpCode.push_back(tmpStr);
+    tmpStr="        MOV DS,AX";
+    cmpCode.push_back(tmpStr);
+    tmpStr="        XOR EAX,EAX";
+    cmpCode.push_back(tmpStr);
     buildCodes();
+    iCmpFn("        MOV AH,02H");
+    iCmpFn("        INT 21H");
     tmpStr="CSEG    ENDS";
     cmpCode.push_back(tmpStr);
     return true;
@@ -171,7 +217,7 @@ string divCodes(QT qtEq)
     }
     else if(qtEq.s[0].name=="do")
     {
-        iCmpFn("        CMP R,0");
+        iCmpFn("        CMP EAX,0");
         if(cmpTmp=="")
         {
             int tmpCnts=types.back();
@@ -189,6 +235,7 @@ string divCodes(QT qtEq)
     else if(qtEq.s[0].name=="we")
     {
         string tmpJmps=indica[indica.size()-1];
+        tmpJmps.erase(remove(tmpJmps.begin(),tmpJmps.end(),'E'),tmpJmps.end());
         iCmpFn("        JMP "+tmpJmps);
         cmpTmp=indica.back()+":";
         types.pop_back();
@@ -197,7 +244,7 @@ string divCodes(QT qtEq)
     }
     else if(qtEq.s[0].name=="if")
     {
-        iCmpFn("        CMP R,0");
+        iCmpFn("        CMP EAX,0");
         if(cmpTmp=="")
         {
             types.push_back(++divCounts[1]);
@@ -232,21 +279,22 @@ bool buildCodes()
         {
             if(rGroup[0]=="")
             {
-                iCmpFn("        LD R,"+qtS[i].s[1].name);
-                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name);
+                iCmpFn("        MOV EAX,"+nameToAddr(qtS[i].s[1].name));
+                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" EAX,"+nameToAddr(qtS[i].s[2].name));
             }
             else if(rGroup[0]==qtS[i].s[1].name)
             {
                 if(qtS[i].s[1].L+1)
-                    iCmpFn("        ST R,"+qtS[i].s[1].name);
-                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name);
+                    iCmpFn("        MOV "+nameToAddr(qtS[i].s[1].name)+",EAX");
+                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" EAX,"+nameToAddr(qtS[i].s[2].name));
             }
             else
             {
                 if(qtS[qtPos[0]].s[qtPos[1]].L+1)  //利用实现存在qtpos里的元素位置定位
-                    iCmpFn("        ST R,"+qtS[qtPos[0]].s[qtPos[1]].name);
-                iCmpFn("        LD R,"+qtS[i].s[1].name);
-                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" R,"+qtS[i].s[2].name);
+                    //iCmpFn("        ST EAX,"+qtS[qtPos[0]].s[qtPos[1]].name);
+                    iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",EAX");
+                iCmpFn("        MOV EAX,"+nameToAddr(qtS[i].s[1].name));
+                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" EAX,"+nameToAddr(qtS[i].s[2].name));
             }
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
@@ -256,18 +304,20 @@ bool buildCodes()
         {
             if(rGroup[0]=="")
             {
-                iCmpFn("        LD R,"+qtS[i].s[1].name);
+                iCmpFn("        MOV EAX,"+nameToAddr(qtS[i].s[1].name));
             }
             else if(rGroup[0]==qtS[i].s[1].name)
             {
                 if(qtS[i].s[1].L+1)
-                    iCmpFn("        ST R,"+qtS[i].s[1].name);
+                    //iCmpFn("        ST EAX,"+qtS[i].s[1].name);
+                    iCmpFn("        MOV "+nameToAddr(qtS[i].s[1].name)+",EAX");
             }
             else  // !=B , !=A ?
             {
                 if(qtS[qtPos[0]].s[qtPos[1]].L+1)
-                    iCmpFn("        ST R,"+qtS[qtPos[0]].s[qtPos[1]].name);
-                iCmpFn("        LD R,"+qtS[i].s[1].name);
+                    //iCmpFn("        ST EAX,"+qtS[qtPos[0]].s[qtPos[1]].name);
+                    iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",EAX");
+                iCmpFn("        MOV EAX,"+nameToAddr(qtS[i].s[1].name));
             }
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
@@ -278,7 +328,7 @@ bool buildCodes()
             if(rGroup[0]!="")
             {
                 if(qtS[qtPos[0]].s[qtPos[1]].L+1)
-                iCmpFn("        ST R,"+rGroup[0]);
+                    iCmpFn("        MOV "+nameToAddr(rGroup[0])+",EAX");
                 rGroup[0]="";
             }
             divCodes(qtS[i]);
