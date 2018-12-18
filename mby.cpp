@@ -133,6 +133,7 @@ string divCodes(QT qtEq)
             types.push_back(++divCounts[0]);
             stream1<<divCounts[0];
             cmpTmp="WH"+stream1.str()+":";
+            indica.push_back("WH"+stream1.str());
         }
         else
             indica.push_back(cmpTmp.substr(0,cmpTmp.size()-2));
