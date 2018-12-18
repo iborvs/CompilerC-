@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include "head.h"
 //装有四元式转汇编相关代码
 using namespace std;
@@ -23,13 +24,15 @@ int optimization();
 int divBlock();
 extern vector<Quadruple> optdQT;
 extern vector<Quadruple> qua_list;
+extern vector<vector<Synbl> > sbl;
 vector<SYMBL>sba;  //伪符号表  //无活跃信息四元式
 vector<QT>qtS;      //有活跃信息四元式
-string rGroup[3]= {"","",""}; //寄存器组名称 三寄存器
+string rGroup[3]= {"","",""}; //寄存器组名称 假定三寄存器
 int qtPos[2];  //用于存放在寄存器里的元素在四元式栈里的地址
 vector<string>cmpCode; //存放汇编指令 没有分号
 string cmpTmp="";//汇编代码缓存区 在下一行非标号集合时附在头部
 int divCounts[7]= {0};
+int typeSize[4]= {8,2,2,8}; //存放对应占用十六进制数位
 vector<int>types;
 vector<string>indica;
 bool buildCodes();
@@ -60,7 +63,27 @@ string opToCmpil(string str)  //将运算符等转换为汇编语言的指令
         cmpStr="MOD";
     return cmpStr;
 }
-int ifSybCodes(QT qtEq,int i)
+string addrToType(int i) //根据十六进制数位转换所需单元大小类型
+{
+    string str;
+    switch(i)
+    {
+    case 8:
+        str="DD";
+        break;
+    case 4:
+        str="DW";
+        break;
+    case 2:
+        str="DB";
+        break;
+    default:
+        str="ERROR";
+        break;
+    }
+    return str;
+}
+int ifSybCodes(QT qtEq,int i) //判断大小的算符编成
 {
     string tmpJMP,tmpStr;
     if(qtEq.s[0].name=="<")
@@ -98,15 +121,23 @@ bool buildDSEG()  //建立数据段汇编代码 未完
     int i=0;
     string aN[5]; //int转string临时变量
     stringstream stream1;
-    for(i=0; i<5; i++)
-    {
-        stream1<<nums[i];
-        aN[i]=stream1.str();
-    }
     string tmpStr="DSEG    SEGMENT"; //汇编语句输出临时变量
     cmpCode.push_back(tmpStr);
-    tmpStr="        int    DD "+aN[0]+" DUP(0)";
-    cmpCode.push_back(tmpStr);
+
+    for(i=0; i<sbl.size(); i++)
+    {
+        int len=sbl[i].size();
+        int maxAddr;
+        if(len)
+        {
+            maxAddr=sbl[i][len-1].addr+typeSize[i];
+            maxAddr/=typeSize[i];
+            stream1<<maxAddr;
+            tmpStr="        "+sbl[i][0].type+"S "+addrToType(typeSize[i])+" "+stream1.str()+" DUP(0)";
+            cmpCode.push_back(tmpStr);
+        }
+    }
+
     tmpStr="DSEG    ENDS";
     cmpCode.push_back(tmpStr);
     return true;
@@ -246,6 +277,7 @@ bool buildCodes()
         {
             if(rGroup[0]!="")
             {
+                if(qtS[qtPos[0]].s[qtPos[1]].L+1)
                 iCmpFn("        ST R,"+rGroup[0]);
                 rGroup[0]="";
             }
@@ -326,6 +358,8 @@ void qtScanL()
 }
 int runCompil()
 {
+    ofstream out;
+    out.open("compileCodes.ASM");
     divBlock();
     initL();
     qtScanL();
@@ -333,7 +367,7 @@ int runCompil()
     int i=0;
     for(i=0; i<cmpCode.size(); i++)
     {
-        cout<<cmpCode[i]<<endl;
+        out<<cmpCode[i]<<endl;
     }
     return 0;
 }

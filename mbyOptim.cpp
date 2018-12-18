@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <fstream>
 #include "head.h"
 #include "stdio.h"
 //四元式优化相关代码 入口是已生成的四元式序列:qua_list
@@ -159,6 +160,17 @@ bool ifConst(string str)
         result=true;
     return result;
 }
+int ifArr(string str)
+{
+    int pos=-1,i=0;
+    for(i=0; i<str.size(); i++)
+        if(str[i]=='[')
+        {
+            pos=i;
+            break;
+        }
+    return pos;
+}
 int optimization()
 {
     int qtI=0;//读取四元式的位置 从头
@@ -171,6 +183,8 @@ int optimization()
         if(tmpQTS[qtI].s[0]=="=") //A=B 或 A=C1  规范见第八章优化ppt
         {
             exist=ifExist(tmpQTS[qtI].s[1]);
+            if(tmpQTS[qtI].s[2]!="_")
+                tmpQTS[qtI].s[3]+="["+tmpQTS[qtI].s[2];
             if(!exist)  //不存在B则为B建立节点 然后将节点入栈
             {
                 tmpNode.n=DAG.size()+1;
@@ -261,10 +275,12 @@ int optimization()
 }
 int qtOut()
 {
+    ofstream out;
+    out.open("optimizedQT.txt");
     int i=0;
     for(i=0; i<optdQT.size(); i++)
     {
-        cout<<"("<<optdQT[i].s[0]<<","<<optdQT[i].s[1]<<","<<optdQT[i].s[2]<<","<<optdQT[i].s[3]<<")"<<endl;
+        out<<"("<<optdQT[i].s[0]<<","<<optdQT[i].s[1]<<","<<optdQT[i].s[2]<<","<<optdQT[i].s[3]<<")"<<endl;
     }
 }
 int rebuildQT()  //输出四元式到新栈
@@ -336,6 +352,5 @@ int divBlock()
             tmpQTS.push_back(tmpQT);
         }
     }
-    qtOut();
     return 0;
 }
