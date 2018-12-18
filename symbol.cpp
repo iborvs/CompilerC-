@@ -42,7 +42,7 @@ void fill_symbol()
     symbol.name = words[token_i-1].value;
     symbol.cat = "v";
     if(symbol.type == "int") {
-        symbol.addr = sbl[0].size()*8;
+        symbol.addr = sbl[0].size()*4;
         //symbol_i[0]++;
         out_symbol();
     }
@@ -57,7 +57,7 @@ void fill_symbol()
         out_symbol();
     }
     else if(symbol.type == "float") {
-        symbol.addr = sbl[3].size()*8;
+        symbol.addr = sbl[3].size()*4;
         //symbol_i[3]++;
         out_symbol();
     }
