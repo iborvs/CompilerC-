@@ -32,7 +32,7 @@ int qtPos[2];  //用于存放在寄存器里的元素在四元式栈里的地址
 vector<string>cmpCode; //存放汇编指令 没有分号
 string cmpTmp="";//汇编代码缓存区 在下一行非标号集合时附在头部
 int divCounts[7]= {0};
-int typeSize[4]= {8,2,2,8}; //存放对应占用十六进制数位
+int typeSize[4]= {4,2,2,4}; //存放对应占用十六进制数位
 vector<int>types;
 vector<string>indica;
 bool buildCodes();
@@ -142,10 +142,10 @@ int ifSybCodes(QT qtEq,int i) //判断大小的算符编成
     {
         if(rGroup[0]!="")
         {
-            iCmpFn("        MOV "+nameToAddr(rGroup[0])+",EAX");
+            iCmpFn("        MOV "+nameToAddr(rGroup[0])+",AX");
             rGroup[0]="";
         }
-        tmpStr="        MOV EAX,"+nameToAddr(qtEq.s[1].name) +" "+tmpJMP+" "+nameToAddr(qtEq.s[2].name);
+        tmpStr="        MOV AX,"+nameToAddr(qtEq.s[1].name) +" "+tmpJMP+" "+nameToAddr(qtEq.s[2].name);
         iCmpFn(tmpStr);
         rGroup[0]=qtEq.s[3].name;
         qtPos[0]=i;
@@ -190,7 +190,7 @@ bool buildCSEG()
     cmpCode.push_back(tmpStr);
     tmpStr="        MOV DS,AX";
     cmpCode.push_back(tmpStr);
-    tmpStr="        XOR EAX,EAX";
+    tmpStr="        XOR AX,AX";
     cmpCode.push_back(tmpStr);
     buildCodes();
     iCmpFn("        MOV AH,02H");
@@ -217,7 +217,7 @@ string divCodes(QT qtEq)
     }
     else if(qtEq.s[0].name=="do")
     {
-        iCmpFn("        CMP EAX,0");
+        iCmpFn("        CMP AX,0");
         if(cmpTmp=="")
         {
             int tmpCnts=types.back();
@@ -244,7 +244,7 @@ string divCodes(QT qtEq)
     }
     else if(qtEq.s[0].name=="if")
     {
-        iCmpFn("        CMP EAX,0");
+        iCmpFn("        CMP AX,0");
         if(cmpTmp=="")
         {
             types.push_back(++divCounts[1]);
@@ -279,22 +279,22 @@ bool buildCodes()
         {
             if(rGroup[0]=="")
             {
-                iCmpFn("        MOV EAX,"+nameToAddr(qtS[i].s[1].name));
-                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" EAX,"+nameToAddr(qtS[i].s[2].name));
+                iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
+                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" AX,"+nameToAddr(qtS[i].s[2].name));
             }
             else if(rGroup[0]==qtS[i].s[1].name)
             {
                 if(qtS[i].s[1].L+1)
-                    iCmpFn("        MOV "+nameToAddr(qtS[i].s[1].name)+",EAX");
-                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" EAX,"+nameToAddr(qtS[i].s[2].name));
+                    iCmpFn("        MOV "+nameToAddr(qtS[i].s[1].name)+",AX");
+                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" AX,"+nameToAddr(qtS[i].s[2].name));
             }
             else
             {
                 if(qtS[qtPos[0]].s[qtPos[1]].L+1)  //利用实现存在qtpos里的元素位置定位
-                    //iCmpFn("        ST EAX,"+qtS[qtPos[0]].s[qtPos[1]].name);
-                    iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",EAX");
-                iCmpFn("        MOV EAX,"+nameToAddr(qtS[i].s[1].name));
-                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" EAX,"+nameToAddr(qtS[i].s[2].name));
+                    //iCmpFn("        ST AX,"+qtS[qtPos[0]].s[qtPos[1]].name);
+                    iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
+                iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
+                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" AX,"+nameToAddr(qtS[i].s[2].name));
             }
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
@@ -304,20 +304,20 @@ bool buildCodes()
         {
             if(rGroup[0]=="")
             {
-                iCmpFn("        MOV EAX,"+nameToAddr(qtS[i].s[1].name));
+                iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
             }
             else if(rGroup[0]==qtS[i].s[1].name)
             {
                 if(qtS[i].s[1].L+1)
-                    //iCmpFn("        ST EAX,"+qtS[i].s[1].name);
-                    iCmpFn("        MOV "+nameToAddr(qtS[i].s[1].name)+",EAX");
+                    //iCmpFn("        ST AX,"+qtS[i].s[1].name);
+                    iCmpFn("        MOV "+nameToAddr(qtS[i].s[1].name)+",AX");
             }
             else  // !=B , !=A ?
             {
                 if(qtS[qtPos[0]].s[qtPos[1]].L+1)
-                    //iCmpFn("        ST EAX,"+qtS[qtPos[0]].s[qtPos[1]].name);
-                    iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",EAX");
-                iCmpFn("        MOV EAX,"+nameToAddr(qtS[i].s[1].name));
+                    //iCmpFn("        ST AX,"+qtS[qtPos[0]].s[qtPos[1]].name);
+                    iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
+                iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
             }
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
@@ -328,7 +328,7 @@ bool buildCodes()
             if(rGroup[0]!="")
             {
                 if(qtS[qtPos[0]].s[qtPos[1]].L+1)
-                    iCmpFn("        MOV "+nameToAddr(rGroup[0])+",EAX");
+                    iCmpFn("        MOV "+nameToAddr(rGroup[0])+",AX");
                 rGroup[0]="";
             }
             divCodes(qtS[i]);
