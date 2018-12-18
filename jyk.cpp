@@ -11,13 +11,13 @@ extern vector<Word> words;
 extern int token_i;
 
 int syn0 = 0;
-vector<string> A;
+vector<string> A;//分析栈
 vector<string> SEM;
 
-string s = "";
-string ss = "";
-string connect="";
-void reset0()
+string s = "";//记录>,<,>=,<=,==
+string ss = "";//记录+-*/
+string connect="";//连接+-*/和GEQ
+void reset0()//清空分析栈
 {
 while(!A.empty())
     {
@@ -211,6 +211,12 @@ int fun_while()
      else if(A.back().compare("P")==0&&(words[token_i].type.compare("I")==0||words[token_i].type.compare("c")==0))
     {
         //cout<<"P->I'"<<endl;
+
+        if(words[token_i].type.compare("I")==0) //判断标识符是否未定义
+        {
+            if(un_def(words[token_i].value))
+                return 0;
+        }
         A.pop_back();
         A.push_back("I");
         return 1;
@@ -316,7 +322,7 @@ int fn_while()
     while(a==1)
     {
         a = fun_while();
-		/*
+        /*
         for(int i=0;i<A.size();i++)
         {
             cout<<A[i];
@@ -332,10 +338,11 @@ int fn_while()
         //cout<<"RIGHT"<<endl;
 		//token_i++;
 		//cout<<token_i;
+
 		return 1;
 	}
     else if(a==0){
-        cout<<"WRONG"<<endl;
+        //cout<<"WRONG"<<endl;
 		return 0;
 	}
 }

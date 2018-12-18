@@ -7,10 +7,12 @@ extern vector<Quadruple> qua_list;
 struct Quadruple qua;
 struct Synbl symbol;
 int token_i = 0;
-ofstream fout1;
+ofstream fout1; //四元式表
 ofstream fout2;
-ofstream fout3;
+ofstream fout3; //主函数符号表
+ofstream fout4; //子函数符号表
 int t_k = 0;   //用来表示算数表达式tk中的k
+int if_subfun;  //如果现在在主函数，该值为0，否则该值为1
 string tk;
 //四元式存到qua_list和文件
 string int_to_str(int& k) //输出tk
@@ -31,7 +33,7 @@ void out_qua()
 int type()
 {
     string s = words[token_i].value;
-    if(s == "int" || s == "char" || s == "float" || s == "bool") {
+    if(s == "int" || s == "char" || s == "float" || s == "bool" || s == "void") {
         symbol.type = s;
         token_i++;
         return 1;
@@ -52,9 +54,96 @@ int id()
     }
 }
 
-int para()
+void formal_para()
 {
+    if(first_formal_para()) {
+        other_formal_para();
+    }
+}
 
+int first_formal_para()
+{
+    int token_i_tmp = token_i;
+    if(type()) {
+        if(id()) {
+            return 1;
+        }
+    }
+    token_i =  token_i_tmp;
+    return 0;
+}
+int other_formal_para()
+{
+    int token_i_tmp = token_i;
+    if(words[token_i].value == ",") {
+        token_i++;
+        if(type()) {
+            if(id()) {
+                if(other_formal_para())
+                    return 1;
+            }
+            else {
+                token_i = token_i_tmp;
+                return 0;
+            }
+        }
+        else {
+            token_i = token_i_tmp;
+            return 0;
+        }
+    }
+    else {
+        token_i = token_i_tmp;
+        return 0;
+    }
+}
+
+void actual_para()
+{
+    if(first_actual_para()) {
+        other_actual_para();
+    }
+}
+
+int first_actual_para()
+{
+    int token_i_tmp = token_i;
+    if(id()) {
+        if(un_def(words[token_i-1].value)) return 0;
+        qua.s[0] = "param";
+        qua.s[1] = words[token_i-1].value;
+        qua.s[2] = "_";
+        qua.s[3] = "_";
+        out_qua();
+        return 1;
+    }
+    token_i =  token_i_tmp;
+    return 0;
+}
+int other_actual_para()
+{
+    int token_i_tmp = token_i;
+    if(words[token_i].value == ",") {
+        token_i++;
+        if(id()) {
+            if(un_def(words[token_i-1].value)) return 0;
+            qua.s[0] = "param";
+            qua.s[1] = words[token_i-1].value;
+            qua.s[2] = "_";
+            qua.s[3] = "_";
+            out_qua();
+            if(other_actual_para())
+                return 1;
+        }
+        else {
+            token_i = token_i_tmp;
+            return 0;
+        }
+    }
+    else {
+        token_i = token_i_tmp;
+        return 0;
+    }
 }
 
 void fn_body()
@@ -88,8 +177,18 @@ void fn_body()
         token_i = token_i_tmp;
     }
     token_i_tmp = token_i;
-    if(arr()) {
+    if(l_arr()) {
         fn_body();
+    }
+    else {
+        token_i = token_i_tmp;
+    }
+    token_i_tmp = token_i;
+    if(fn_call()) {
+        if(words[token_i].value == ";") {
+            token_i++;
+            fn_body();
+        }
     }
     else {
         token_i = token_i_tmp;
@@ -163,6 +262,74 @@ int evaluation()
     return 0;
 }
 
+int r_value()
+{
+    int token_i_tmp = token_i;
+    if(fn_call()) {
+        return 1;
+    }
+    else {
+        token_i = token_i_tmp;
+    }
+    /*
+    if(r_arr()){
+        return 1;
+    }
+    else {
+        token_i = token_i_tmp;
+    }
+    */
+    if(factor()){
+        return 1;
+    }
+    else {
+        token_i = token_i_tmp;
+    }
+    return 0;
+}
+
+int fn_call()  //函数调用
+{
+    if(id()) {
+        string str_tmp = words[token_i-1].value;
+        if(words[token_i].value == "(") {
+            token_i++;
+            actual_para();
+            if(words[token_i].value == ")") {
+                qua.s[0] = "call";
+                qua.s[1] = str_tmp;
+                qua.s[2] = "_";
+                qua.s[3] = "_";
+                out_qua();
+                token_i++;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+int factor()
+{
+    if(exp()) {
+        qua.s[1] = tk;
+        return 1;
+    }
+    else if(id()) {
+        if(un_def(words[token_i-1].value)) return 0;
+        qua.s[1] = words[token_i-1].value;
+        return 1;
+    }
+    else if(words[token_i].type == "c" || words[token_i].type == "C" || words[token_i].type == "S") {
+        qua.s[1] = words[token_i].value;
+        token_i++;
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
 int rt()
 {
     if(words[token_i].value == "return") {
@@ -175,36 +342,6 @@ int rt()
         }
     }
     return 0;
-}
-
-int r_value()
-{
-    if(factor()){
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-
-int factor()
-{
-    if(exp()) {
-        qua.s[1] = tk;
-        return 1;
-    }
-    else if(id()) {
-        qua.s[1] = words[token_i-1].value;
-        return 1;
-    }
-    else if(words[token_i].type == "c" || words[token_i].type == "C" || words[token_i].type == "S") {
-        qua.s[1] = words[token_i].value;
-        token_i++;
-        return 1;
-    }
-    else {
-        return 0;
-    }
 }
 
 int fn()
@@ -220,7 +357,7 @@ int fn()
             token_i++;
             if(words[token_i].value == "(") {
                 token_i++;
-                para();
+                formal_para();
                 if(words[token_i].value == ")") {
                     token_i++;
                     if(words[token_i].value == "{") {
@@ -246,18 +383,35 @@ int fn()
     return 0;
 }
 
+int fun()
+{
+    int flag = 1;
+    while(token_i < words.size()) {
+        if(!fn()) {
+             flag = 0;
+             break;
+        }
+    }
+    return flag;
+}
+
 int translate()
 {
     fout1.open("quadruple.txt");
     fout3.open("symbol.txt");
-    if(fn()) {
+    fout4.open("vall.txt");
+    if(fun()) {
         fout1.close();
         fout2.close();
+        fout3.close();
+        fout4.close();
         return 1;
     }
     else {
         fout1.close();
         fout2.close();
+        fout3.close();
+        fout4.close();
         return 0;
     }
 }
