@@ -11,10 +11,11 @@ struct Arr ar;
 extern int token_i;
 extern int t_k;   //用来表示算数表达式tk中的k
 extern string tk;
+extern int if_subfun;
 int arr_i = 0;
 ofstream fout;
 
-int arr()
+int l_arr()
 {
     fout.open("arr_table.txt");
     fout<<"名字"<<"\t"<<"类型"<<"\t"<<"地址"<<"\t"<<"上界"<<"\t"<<"长度"<<endl;
@@ -24,25 +25,10 @@ int arr()
 
                 ar.name = words[token_i-1].value;
                 ar.type = words[token_i-2].value;
-                int flag = 0;
-                for(int i = 0; i < 4; i++) {
-                    for(int j = 0; j < sbl[i].size(); j++) {
-                        if(sbl[i][j].name == ar.name) {
-                            flag = 1;
-                            break;
-                        }
-                    }
-                }
-                for(int i = 0; i < arrs.size(); i++) {
-                    if(arrs[i].name == ar.name) {
-                        flag = 1;
-                        break;
-                    }
-                }
-                if(flag == 1) {
-                    cout<<"变量重定义"<<endl;
+
+                if(re_def(ar.name))
                     return 0;
-                }
+
                 token_i++;
                 if(words[token_i].type == "c") {
 
@@ -97,30 +83,22 @@ int arr()
         string s3 = words[token_i-1].value;
         if(words[token_i].value == "[") {
 
-            //符号表中检查
-            int flag = 0;
-            for(int i = 0; i < 4; i++) {
-                for(int j = 0; j < sbl[i].size(); j++) {
-                    if(sbl[i][j].name == symbol.name) {
-                        flag = 1;
-                        break;
-                    }
-                }
-            }
-            for(int i = 0; i < arrs.size(); i++) {
-                if(arrs[i].name == symbol.name) {
-                    flag = 1;
-                    break;
-                }
-            }
-            if(flag == 0) {
-                cout<<"变量还未声明"<<endl;
+            if(un_def(words[token_i-1].value))
                 return 0;
-            }
-            //符号表中检查结束
 
             token_i++;
             if(words[token_i].type == "c" || words[token_i].type == "I") {
+
+                int flag = 0;
+                for(int i = 0; i < arrs.size(); i++) {
+                    if(arrs[i].name == words[token_i-2].value) {
+                        int len = atoi(words[token_i].value.c_str());
+                        if(words[token_i].type == "c" && len >= arrs[i].up) {
+                            cout<<"数组访问越界"<<endl;
+                            return 0;
+                        }
+                    }
+                }
                 string s2 = words[token_i].value;
                 token_i++;
                 if(words[token_i].value == "]") {
@@ -162,4 +140,34 @@ int arr()
     }
     return 0;
 }
+/*
+int r_arr()
+{
+    if(id()) {
+        if(un_def(words[token_i-1].value)) return 0;
 
+        if(words[token_i].value == "[") {
+            token_i++;
+            if(words[token_i].type == "c" || words[token_i].type == "I") {
+                token_i++;
+                //检查是否越界
+                if(words[token_i].type == "c") {
+                    for(int i = 0; i < arrs.size(); i++) {
+                        if(arrs[i].name == words[token_i-2].value) {
+                            int len = atoi(words[token_i].value.c_str());
+                            if(len >= arrs[i].up) {
+                                cout<<"数组访问越界"<<endl;
+                                return 0;
+                            }
+                        }
+                    }
+                }
+                //检查完成
+                if(words[token_i].value == "]")
+                    return 1;
+            }
+        }
+    }
+    return 0;
+}
+*/
