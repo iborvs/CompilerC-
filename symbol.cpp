@@ -12,6 +12,7 @@ extern struct Synbl symbol;
 extern int token_i;
 int symbol_i[4] = {0};
 extern int t_k;   //用来表示算数表达式tk中的k
+extern int if_subfun;
 extern string tk;
 extern ofstream fout3;
 
