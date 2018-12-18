@@ -40,10 +40,22 @@ float preCompute(float a,float b,string ope)
     case '/':
         c=a/b;
         break;
+    case '%':
+        c=(int)a%(int)b;
+        break;
     default:
         c=-19999;
     }
     return c;
+}
+int opType(string str)
+{
+    int tmp=1;
+    if(str[0]<=122 && str[0]>=97)
+        tmp=0;
+    else if(str[0]<=90 && str[0]>=65)
+        tmp=0;
+    return tmp;
 }
 bool ifExist(string str)
 {
@@ -193,7 +205,7 @@ int optimization()
             //stream1<<tmpQTS[qtI].s[2];
             C2=atof(tmpQTS[qtI].s[2].c_str());
             //计算C
-             C=preCompute(C1,C2,tmpQTS[qtI].s[0]);
+            C=preCompute(C1,C2,tmpQTS[qtI].s[0]);
             stream1<<C;
             delA(tmpQTS[qtI].s[3]);
             //cout<<stream1.str()<<endl;
@@ -204,7 +216,7 @@ int optimization()
             }
             DAG[tPos].A.push_back(tmpQTS[qtI].s[3]);
         }
-        else if(tmpQTS[qtI].s[0].size()==1)  //暂定只有运算符是一位 只考虑二元
+        else if(tmpQTS[qtI].s[0].size()<=2 && opType(tmpQTS[qtI].s[0]) )  //暂定只有运算符是两位以下 只考虑二元
         {
             if(!ifExist(tmpQTS[qtI].s[1]))
                 buildNode(tmpQTS[qtI].s[1]);
@@ -219,7 +231,7 @@ int optimization()
                 {
                     if( findBC(tmpQTS[qtI].s[1],DAG[j].sblngs[0])!=-2 && findBC(tmpQTS[qtI].s[2],DAG[j].sblngs[1]) ) //在操作符节点下自带分别为B和C
                     {
-                         DAG[j].A.push_back(tmpQTS[qtI].s[0]); //把A附加上去
+                        DAG[j].A.push_back(tmpQTS[qtI].s[0]); //把A附加上去
                         tPos=-2;
                         break;
                     }
@@ -231,7 +243,7 @@ int optimization()
                 tmpNode.ope=tmpQTS[qtI].s[0];
                 tmpNode.n=DAG.size()+1;
                 //B和C的位置
-               if(ifExist(tmpQTS[qtI].s[1]))
+                if(ifExist(tmpQTS[qtI].s[1]))
                     tmpNode.sblngs[0]=&DAG[xyPos[0]];
                 if(ifExist(tmpQTS[qtI].s[2]))
                     tmpNode.sblngs[1]=&DAG[xyPos[0]];
@@ -252,7 +264,7 @@ int qtOut()
     int i=0;
     for(i=0; i<optdQT.size(); i++)
     {
-       cout<<"("<<optdQT[i].s[0]<<","<<optdQT[i].s[1]<<","<<optdQT[i].s[2]<<","<<optdQT[i].s[3]<<")"<<endl;
+        cout<<"("<<optdQT[i].s[0]<<","<<optdQT[i].s[1]<<","<<optdQT[i].s[2]<<","<<optdQT[i].s[3]<<")"<<endl;
     }
 }
 int rebuildQT()  //输出四元式到新栈
@@ -279,7 +291,7 @@ int rebuildQT()  //输出四元式到新栈
         }
         for(j=0; j<DAG[i].A.size(); j++)
         {
-           if(DAG[i].A[j][0]!='t')
+            if(DAG[i].A[j][0]!='t')
             {
                 tmpQT.s[0]="=";
                 tmpQT.s[1]=DAG[i].M;

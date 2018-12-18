@@ -31,6 +31,7 @@ vector<string>cmpCode; //存放汇编指令 没有分号
 string cmpTmp="";//汇编代码缓存区 在下一行非标号集合时附在头部
 int divCounts[7]= {0};
 vector<int>types;
+vector<string>indica;
 bool buildCodes();
 int iCmpFn(string str);
 int getFreeR() //找空闲寄存器，多寄存器时使用
@@ -55,6 +56,8 @@ string opToCmpil(string str)  //将运算符等转换为汇编语言的指令
         cmpStr="MUL";
     else if(str=="/")
         cmpStr="DIV";
+    else if(str=="%")
+        cmpStr="MOD";
     return cmpStr;
 }
 int ifSybCodes(QT qtEq,int i)
@@ -125,24 +128,58 @@ string divCodes(QT qtEq)
     stringstream stream1;
     if(qtEq.s[0].name=="wh")
     {
-        types.push_back(++divCounts[0]);
-        stream1<<divCounts[0];
-        cmpTmp="WH"+stream1.str()+":";
+        if(cmpTmp=="")
+        {
+            types.push_back(++divCounts[0]);
+            stream1<<divCounts[0];
+            cmpTmp="WH"+stream1.str()+":";
+        }
+        else
+            indica.push_back(cmpTmp.substr(0,cmpTmp.size()-2));
     }
     else if(qtEq.s[0].name=="do")
     {
-        int tmpCnts=types.back();
-        stream1<<tmpCnts;
         iCmpFn("        CMP R,0");
-        iCmpFn("        JNE  WHE"+stream1.str());
+        if(cmpTmp=="")
+        {
+            int tmpCnts=types.back();
+            stream1<<tmpCnts;
+            string tmpJmps="WHE"+stream1.str();
+            iCmpFn("        JNE  "+tmpJmps);
+            indica.push_back(tmpJmps);
+        }
+        else
+        {
+            iCmpFn("        JNE  "+cmpTmp.substr(0,cmpTmp.size()-2));
+            indica.push_back(cmpTmp.substr(0,cmpTmp.size()-2));
+        }
     }
     else if(qtEq.s[0].name=="we")
     {
+        string tmpJmps=indica[indica.size()-1];
+        iCmpFn("        JMP "+tmpJmps);
+        cmpTmp=indica.back()+":";
+        types.pop_back();
+        indica.pop_back();
+        indica.pop_back();
+    }
+    else if(qtEq.s[0].name=="if")
+    {
+        iCmpFn("        CMP R,0");
+        if(cmpTmp=="")
+        {
+            types.push_back(++divCounts[1]);
+            stream1<<divCounts[1];
+            iCmpFn("        JNE  IFE"+stream1.str());
+        }
+        else
+            iCmpFn("        JNE  "+cmpTmp.substr(0,cmpTmp.size()-2));
+    }
+    else if(qtEq.s[0].name=="ie")
+    {
         int tmpCnts=types.back();
         stream1<<tmpCnts;
-        iCmpFn("        JMP WH"+stream1.str());
-        cmpTmp="WHE"+stream1.str()+":";
-        types.pop_back();
+        cmpTmp="IFE"+stream1.str()+":";
     }
     return tmpStr;
 }
