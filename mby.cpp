@@ -228,7 +228,7 @@ bool buildDSEG()  //建立数据段汇编代码 未完
         tmpStr="        "+activeVs[i].name+" "+addrToType(activeVs[i].L)+" 0";
         cmpCode.push_back(tmpStr);
     }
-    tmpStr="        siz DW 4";
+    tmpStr="        siz DW 2";
     cmpCode.push_back(tmpStr);
     tmpStr="DSEG    ENDS";
     cmpCode.push_back(tmpStr);
@@ -429,6 +429,7 @@ bool buildCodes()
             iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
             iCmpFn("        DIV "+nameToAddr(qtS[i].s[2].name));
             iCmpFn("        MOV AX,DX");
+            iCmpFn("        MOV DX,DX");
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
             qtPos[1]=3;
