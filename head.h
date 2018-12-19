@@ -97,8 +97,10 @@ int l_arr();       //数组作为左值
 //符号表
 void fill_symbol();         //填符号表
 void out_symbol();          //符号表输出到vector和文件
+int find_name(string name); //是否找到该变量
 int un_def(string name);    //判断该变量是否未定义
 int re_def(string name);    //判断该变量是否重定义
+
 
 //函数
 int fn_call();              //函数调用

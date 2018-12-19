@@ -4,7 +4,9 @@ using namespace std;
 extern vector<Word> words;
 extern vector<Quadruple> qua_list;
 extern vector<vector<Synbl> > sbl;
+extern vector<vector<Synbl> > vall;
 extern vector<Arr> arrs;
+extern vector<Arr> sub_arrs;
 extern struct Quadruple qua;
 extern struct Synbl symbol;
 struct Arr ar;
@@ -13,12 +15,16 @@ extern int t_k;   //用来表示算数表达式tk中的k
 extern string tk;
 extern int if_subfun;
 int arr_i = 0;
-ofstream fout;
+int sub_arr_i = 0;
+extern ofstream fout5;
+extern ofstream fout6;
 
 int l_arr()
 {
-    fout.open("arr_table.txt");
-    fout<<"名字"<<"\t"<<"类型"<<"\t"<<"地址"<<"\t"<<"上界"<<"\t"<<"长度"<<endl;
+    //fout5.open("arr_table.txt");
+    //fout5<<"名字"<<"\t"<<"类型"<<"\t"<<"地址"<<"\t"<<"上界"<<"\t"<<"长度"<<endl;
+    //fout6.open("sub_arr_table.txt");
+    //fout6<<"名字"<<"\t"<<"类型"<<"\t"<<"地址"<<"\t"<<"上界"<<"\t"<<"长度"<<endl;
     if(type()) {
         if(id()) {
             if(words[token_i].value == "[") {
@@ -36,35 +42,58 @@ int l_arr()
                     int k = atoi(words[token_i].value.c_str());
                     ar.up = k;
                     if(ar.type == "int")
-                        ar.length = ar.up*8;
+                        ar.length = ar.up*4;
                     else if(ar.type == "char")
                         ar.length = ar.up*2;
                     else if(ar.type == "bool")
                         ar.length = ar.up*2;
                     else
                         return 0;
-                    if(arr_i == 0)
-                        symbol.addr = 0;
-                    else {
-                        string str = arrs[arr_i-1].type;
-                        if(str == "int") {
-                            ar.addr = arrs[arr_i-1].addr + arrs[arr_i-1].length;
+
+                    if(if_subfun == 0) {
+                        if(arr_i == 0)
+                            ar.addr = 0;
+                        else {
+                            string str = arrs[arr_i-1].type;
+                            if(str == "int") {
+                                ar.addr = arrs[arr_i-1].addr + arrs[arr_i-1].length;
+                            }
+                            else if(str == "char") {
+                                ar.addr = arrs[arr_i-1].addr + arrs[arr_i-1].length;
+                            }
+                            else if(str == "bool") {
+                                ar.addr = arrs[arr_i-1].addr + arrs[arr_i-1].length;
+                            }
+                            else
+                                return 0;
                         }
-                        else if(str == "char") {
-                            ar.addr = arrs[arr_i-1].addr + arrs[arr_i-1].length;
-                        }
-                        else if(str == "bool") {
-                            ar.addr = arrs[arr_i-1].addr + arrs[arr_i-1].length;
-                        }
-                        else
-                            return 0;
+                        arrs.push_back(ar);
+                        //cout<<ar.name<<"\t"<<ar.type<<"\t"<<ar.addr<<"\t"<<ar.up<<"\t"<<ar.length<<endl;
+                        fout5<<ar.name<<"\t"<<ar.type<<"\t"<<ar.addr<<"\t"<<ar.up<<"\t"<<ar.length<<endl;
+                        arr_i++;
                     }
-
-                    arrs.push_back(ar);
-                    fout<<ar.name<<"\t"<<ar.type<<"\t"<<ar.addr<<"\t"<<ar.up<<"\t"<<ar.length<<endl;
-
-                    arr_i++;
-                    //完成符号表
+                    else {
+                        if(sub_arr_i == 0)
+                            ar.addr = 0;
+                        else {
+                            string str = sub_arrs[arr_i-1].type;
+                            if(str == "int") {
+                                ar.addr = sub_arrs[arr_i-1].addr + sub_arrs[arr_i-1].length;
+                            }
+                            else if(str == "char") {
+                                ar.addr = sub_arrs[arr_i-1].addr + sub_arrs[arr_i-1].length;
+                            }
+                            else if(str == "bool") {
+                                ar.addr = sub_arrs[arr_i-1].addr + sub_arrs[arr_i-1].length;
+                            }
+                            else
+                                return 0;
+                        }
+                        sub_arrs.push_back(ar);
+                        //cout<<ar.name<<"\t"<<ar.type<<"\t"<<ar.addr<<"\t"<<ar.up<<"\t"<<ar.length<<endl;
+                        fout6<<sub_arrs[sub_arr_i].name<<"\t"<<ar.type<<"\t"<<ar.addr<<"\t"<<ar.up<<"\t"<<ar.length<<endl;
+                        sub_arr_i++;
+                    }
 
                     token_i++;
                     if(words[token_i].value == "]") {
@@ -90,15 +119,32 @@ int l_arr()
             if(words[token_i].type == "c" || words[token_i].type == "I") {
 
                 int flag = 0;
-                for(int i = 0; i < arrs.size(); i++) {
-                    if(arrs[i].name == words[token_i-2].value) {
-                        int len = atoi(words[token_i].value.c_str());
-                        if(words[token_i].type == "c" && len >= arrs[i].up) {
-                            cout<<"数组访问越界"<<endl;
-                            return 0;
+
+                //主函数数组表
+                if(if_subfun == 0) {
+                    for(int i = 0; i < arrs.size(); i++) {
+                        if(arrs[i].name == words[token_i-2].value) {
+                            int len = atoi(words[token_i].value.c_str());
+                            if(words[token_i].type == "c" && len >= arrs[i].up) {
+                                cout<<"数组访问越界"<<endl;
+                                return 0;
+                            }
                         }
                     }
                 }
+                //子函数数组表
+                else {
+                    for(int i = 0; i < sub_arrs.size(); i++) {
+                        if(sub_arrs[i].name == words[token_i-2].value) {
+                            int len = atoi(words[token_i].value.c_str());
+                            if(words[token_i].type == "c" && len >= sub_arrs[i].up) {
+                                cout<<"数组访问越界"<<endl;
+                                return 0;
+                            }
+                        }
+                    }
+                }
+
                 string s2 = words[token_i].value;
                 token_i++;
                 if(words[token_i].value == "]") {
@@ -138,10 +184,12 @@ int l_arr()
 
         }
     }
+    fout5.close();
+    fout6.close();
     return 0;
 }
 /*
-int r_arr()
+int r_arr()  //数组作为右值
 {
     if(id()) {
         if(un_def(words[token_i-1].value)) return 0;

@@ -11,6 +11,8 @@ ofstream fout1; //四元式表
 ofstream fout2;
 ofstream fout3; //主函数符号表
 ofstream fout4; //子函数符号表
+ofstream fout5;
+ofstream fout6;
 int t_k = 0;   //用来表示算数表达式tk中的k
 int if_subfun;  //如果现在在主函数，该值为0，否则该值为1
 string tk;
@@ -66,10 +68,11 @@ int first_formal_para()
     int token_i_tmp = token_i;
     if(type()) {
         if(id()) {
+            fill_symbol();
             return 1;
         }
     }
-    token_i =  token_i_tmp;
+    token_i = token_i_tmp;
     return 0;
 }
 int other_formal_para()
@@ -79,6 +82,7 @@ int other_formal_para()
         token_i++;
         if(type()) {
             if(id()) {
+                fill_symbol();
                 if(other_formal_para())
                     return 1;
             }
@@ -334,7 +338,13 @@ int rt()
 {
     if(words[token_i].value == "return") {
         token_i++;
-        if(factor()) {
+        if(words[token_i].type == "c" || words[token_i].type == "I") {
+            qua.s[0] = "ret";
+            qua.s[1] = words[token_i].value;
+            qua.s[2] = "_";
+            qua.s[3] = "_";
+            out_qua();
+            token_i++;
             if(words[token_i].value == ";") {
                 token_i++;
                 return 1;
@@ -348,6 +358,8 @@ int fn()
 {
     if(type()) {
         if(words[token_i].type == "I" || words[token_i].value == "main") {
+            if(words[token_i].value == "main") if_subfun = 0;
+            else if_subfun = 1;
             qua.s[0] = "start";
             string fn_name = words[token_i].value;
             qua.s[1] = fn_name;
@@ -400,11 +412,17 @@ int translate()
     fout1.open("quadruple.txt");
     fout3.open("symbol.txt");
     fout4.open("vall.txt");
+    fout5.open("arr_table.txt");
+    fout6.open("sub_arr_table.txt");
+    fout5<<"名字"<<"\t"<<"类型"<<"\t"<<"地址"<<"\t"<<"上界"<<"\t"<<"长度"<<endl;
+    fout6<<"名字"<<"\t"<<"类型"<<"\t"<<"地址"<<"\t"<<"上界"<<"\t"<<"长度"<<endl;
     if(fun()) {
         fout1.close();
         fout2.close();
         fout3.close();
         fout4.close();
+        fout5.close();
+        fout6.close();
         return 1;
     }
     else {
@@ -412,6 +430,8 @@ int translate()
         fout2.close();
         fout3.close();
         fout4.close();
+        fout5.close();
+        fout6.close();
         return 0;
     }
 }
