@@ -83,7 +83,7 @@ int action(int state, string cur_w)
             syn.push(syn_elem);
             return -2;
         }
-        else if(cur_w == ";") {
+        else if(cur_w == ";" || cur_w == ">" || cur_w == "<" || cur_w == "==" || cur_w == ">=" || cur_w == "<=") {
             return 0;//0代表成功终止
         }
     }
@@ -110,7 +110,7 @@ int action(int state, string cur_w)
         }
     }
     else if(state == 3) {
-        if(mate("w1", cur_w) || cur_w == ")" || cur_w == ";") {
+        if(mate("w1", cur_w) || cur_w == ")" || cur_w == ";" || cur_w == ">" || cur_w == "<" || cur_w == "==" || cur_w == ">=" || cur_w == "<=") {
             syn.pop();
             qt(syn.top().s);
             syn.pop();
@@ -124,7 +124,7 @@ int action(int state, string cur_w)
         }
     }
     else if(state == 4) {
-        if(mate("w1", cur_w) || cur_w == ")" || cur_w == ";") {
+        if(mate("w1", cur_w) || cur_w == ")" || cur_w == ";" || cur_w == ">" || cur_w == "<" || cur_w == "==" || cur_w == ">=" || cur_w == "<=") {
             syn.pop();
             return 2;
         }
@@ -152,7 +152,7 @@ int action(int state, string cur_w)
         }
     }
     else if(state == 6) {
-        if(mate("i",cur_w)||mate("w1",cur_w)||mate("w2",cur_w)||cur_w=="("||cur_w==")"||cur_w==";") {
+        if(mate("i",cur_w)||mate("w1",cur_w)||mate("w2",cur_w)||cur_w=="("||cur_w==")"||cur_w == ";" || cur_w == ">" || cur_w == "<" || cur_w == "==" || cur_w == ">=" || cur_w == "<=") {
             syn.pop();
             qt(syn.top().s);
             syn.pop();
@@ -161,13 +161,13 @@ int action(int state, string cur_w)
         }
     }
     else if(state == 7) {
-        if(mate("i",cur_w)||mate("w1",cur_w)||mate("w2",cur_w)||cur_w=="("||cur_w==")"||cur_w==";") {
+        if(mate("i",cur_w)||mate("w1",cur_w)||mate("w2",cur_w)||cur_w=="("||cur_w==")"||cur_w == ";" || cur_w == ">" || cur_w == "<" || cur_w == "==" || cur_w == ">=" || cur_w == "<=") {
             syn.pop();
             return 4;
         }
     }
     else if(state == 8) {
-        if(mate("i",cur_w)||mate("w1",cur_w)||mate("w2",cur_w)||cur_w=="("||cur_w==")"||cur_w==";") {
+        if(mate("i",cur_w)||mate("w1",cur_w)||mate("w2",cur_w)||cur_w=="("||cur_w==")"||cur_w == ";" || cur_w == ">" || cur_w == "<" || cur_w == "==" || cur_w == ">=" || cur_w == "<=") {
             sem.push(syn.top().s);
             syn.pop();
             return 5;
@@ -213,7 +213,7 @@ int action(int state, string cur_w)
         }
     }
     else if(state == 11) {
-        if(mate("i",cur_w)||mate("w1",cur_w)||mate("w2",cur_w)||cur_w=="("||cur_w==")"||cur_w==";") {
+        if(mate("i",cur_w)||mate("w1",cur_w)||mate("w2",cur_w)||cur_w=="("||cur_w==")"||cur_w == ";" || cur_w == ">" || cur_w == "<" || cur_w == "==" || cur_w == ">=" || cur_w == "<=") {
             for(int i = 0; i < 3; i++)
                 syn.pop();
         return 6;
