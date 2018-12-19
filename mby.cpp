@@ -429,7 +429,7 @@ bool buildCodes()
             iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
             iCmpFn("        DIV "+nameToAddr(qtS[i].s[2].name));
             iCmpFn("        MOV AX,DX");
-            iCmpFn("        MOV DX,DX");
+            iCmpFn("        XOR DX,DX");
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
             qtPos[1]=3;
