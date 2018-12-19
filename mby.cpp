@@ -25,16 +25,18 @@ int divBlock();
 extern vector<Quadruple> optdQT;
 extern vector<Quadruple> qua_list;
 extern vector<vector<Synbl> > sbl;
+extern vector<Arr> arrs;
 vector<SYMBL>sba;  //伪符号表  //无活跃信息四元式
 vector<QT>qtS;      //有活跃信息四元式
 string rGroup[3]= {"","",""}; //寄存器组名称 假定三寄存器
 int qtPos[2];  //用于存放在寄存器里的元素在四元式栈里的地址
 vector<string>cmpCode; //存放汇编指令 没有分号
 string cmpTmp="";//汇编代码缓存区 在下一行非标号集合时附在头部
-int divCounts[7]= {0};
+int divCounts[7]= {0};//0为while 1为if 2 为关系符号
 int typeSize[4]= {4,2,2,4}; //存放对应占用十六进制数位
 vector<int>types;
 vector<string>indica;
+vector<SYMBL>activeVs; //存储活跃的临时变量 存放名称和占用大小
 bool buildCodes();
 int iCmpFn(string str);
 int getFreeR() //找空闲寄存器，多寄存器时使用
@@ -59,8 +61,6 @@ string opToCmpil(string str)  //将运算符等转换为汇编语言的指令
         cmpStr="MUL";
     else if(str=="/")
         cmpStr="DIV";
-    else if(str=="%")
-        cmpStr="MOD";
     return cmpStr;
 }
 string addrToType(int i) //根据十六进制数位转换所需单元大小类型
@@ -83,6 +83,32 @@ string addrToType(int i) //根据十六进制数位转换所需单元大小类型
     }
     return str;
 }
+int nameToSize(string str) //根据名字寻找大小
+{
+    int strSize=0,i,j;
+    if(str[0]!='t')
+        for(i=0; i<sbl.size(); i++)
+        {
+            for(j=0; j<sbl[i].size(); j++)
+            {
+                if(sbl[i][j].name==str)
+                {
+                    strSize=typeSize[i];
+                    break;
+                }
+            }
+        }
+    if(str[0]=='t')
+        for(i=0; i<activeVs.size(); i++)
+        {
+            if(activeVs[i].name==str)
+            {
+                strSize=activeVs[i].L;
+                break;
+            }
+        }
+    return strSize;
+}
 string nameToAddr(string str) //根据变量名称寻找其在数据段中的地址
 {
     string addr="",vType="";
@@ -94,7 +120,8 @@ string nameToAddr(string str) //根据变量名称寻找其在数据段中的地址
     for(i=0; i<str.size(); i++) //检查是否为数组
         if(str[i]=='[')
         {
-            addr="["+str.substr(0,i)+"+"+nameToAddr(str.substr(i+1))+"*8]";
+            iCmpFn("        MOV BX,"+nameToAddr(str.substr(i+1))+"*4");
+            addr="["+str.substr(0,i)+"+BX]";
             return addr;
         }
     for(i=0; i<sbl.size(); i++)
@@ -120,6 +147,25 @@ string nameToAddr(string str) //根据变量名称寻找其在数据段中的地址
         addr=str;
     }
     return addr;
+}
+string opRelation(QT qtEq)
+{
+    string tmpJMP;
+    if(qtEq.s[0].name=="<")
+        tmpJMP="JB";
+    else if(qtEq.s[0].name==">")
+        tmpJMP="JA";
+    else if(qtEq.s[0].name=="<=")
+        tmpJMP="JBE";
+    else if(qtEq.s[0].name==">=")
+        tmpJMP="JAE";
+    else if(qtEq.s[0].name=="==")
+        tmpJMP="JE";
+    else if(qtEq.s[0].name=="!=")
+        tmpJMP="JNE";
+    else
+        tmpJMP="ERROR";
+    return tmpJMP;
 }
 int ifSybCodes(QT qtEq,int i) //判断大小的算符编成
 {
@@ -155,14 +201,14 @@ int ifSybCodes(QT qtEq,int i) //判断大小的算符编成
 }
 bool buildDSEG()  //建立数据段汇编代码 未完
 {
-    int nums[5]= {1};
+    int tSize=0;
     int i=0;
     string aN[5]; //int转string临时变量
     stringstream stream1;
     string tmpStr="DSEG    SEGMENT"; //汇编语句输出临时变量
     cmpCode.push_back(tmpStr);
 
-    for(i=0; i<sbl.size(); i++)
+    for(i=0; i<sbl.size(); i++) //分配符号表中的空间
     {
         int len=sbl[i].size();
         int maxAddr;
@@ -175,7 +221,19 @@ bool buildDSEG()  //建立数据段汇编代码 未完
             cmpCode.push_back(tmpStr);
         }
     }
-
+    for(i=0; i<arrs.size(); i++)
+    {
+        tSize=arrs[i].length/arrs[i].up;
+        stringstream stream2;
+        stream2<<arrs[i].up;
+        tmpStr="        "+arrs[i].name+" "+addrToType(tSize)+" "+stream2.str()+" DUP(0)";
+        cmpCode.push_back(tmpStr);
+    }
+    for(i=0; i<activeVs.size(); i++) //分配活跃临时变量的空间
+    {
+        tmpStr="        "+activeVs[i].name+" "+addrToType(activeVs[i].L)+" 0";
+        cmpCode.push_back(tmpStr);
+    }
     tmpStr="DSEG    ENDS";
     cmpCode.push_back(tmpStr);
     return true;
@@ -196,6 +254,8 @@ bool buildCSEG()
     iCmpFn("        MOV AH,02H");
     iCmpFn("        INT 21H");
     tmpStr="CSEG    ENDS";
+    cmpCode.push_back(tmpStr);
+    tmpStr="END START";
     cmpCode.push_back(tmpStr);
     return true;
 }
@@ -223,12 +283,12 @@ string divCodes(QT qtEq)
             int tmpCnts=types.back();
             stream1<<tmpCnts;
             string tmpJmps="WHE"+stream1.str();
-            iCmpFn("        JNE  "+tmpJmps);
+            iCmpFn("        JE  "+tmpJmps);
             indica.push_back(tmpJmps);
         }
         else
         {
-            iCmpFn("        JNE  "+cmpTmp.substr(0,cmpTmp.size()-2));
+            iCmpFn("        JE  "+cmpTmp.substr(0,cmpTmp.size()-2));
             indica.push_back(cmpTmp.substr(0,cmpTmp.size()-2));
         }
     }
@@ -249,10 +309,10 @@ string divCodes(QT qtEq)
         {
             types.push_back(++divCounts[1]);
             stream1<<divCounts[1];
-            iCmpFn("        JNE  IFE"+stream1.str());
+            iCmpFn("        JE  IFE"+stream1.str());
         }
         else
-            iCmpFn("        JNE  "+cmpTmp.substr(0,cmpTmp.size()-2));
+            iCmpFn("        JE  "+cmpTmp.substr(0,cmpTmp.size()-2));
     }
     else if(qtEq.s[0].name=="ie")
     {
@@ -262,9 +322,12 @@ string divCodes(QT qtEq)
     }
     return tmpStr;
 }
-int iCmpFn(string str)  //将汇编语言入栈函数
+int iCmpFn(string str)  //将汇编语言入栈函数 部分汇编代码自动对齐
 {
-    str=cmpTmp+str.substr(cmpTmp.size());
+    if(cmpTmp.size()<=8)
+        str=cmpTmp+str.substr(cmpTmp.size());
+    else
+        str=cmpTmp+str.substr(8);
     cmpCode.push_back(str);
     cmpTmp="";
     return 0;
@@ -323,7 +386,7 @@ bool buildCodes()
             qtPos[0]=i;
             qtPos[1]=3;
         }
-        else if( ifDiv(qtS[i].s[0].name) )
+        else if( ifDiv(qtS[i].s[0].name) ) //是否为可区分块的四元式
         {
             if(rGroup[0]!="")
             {
@@ -333,9 +396,36 @@ bool buildCodes()
             }
             divCodes(qtS[i]);
         }
-        else
+        else  if( opRelation(qtS[i])!="ERROR" ) //关系比较符 代码经过优化
         {
-            ifSybCodes(qtS[i],i);
+            if(rGroup[0]!="") //若寄存器里的数不为空
+                if(qtS[qtPos[0]].s[qtPos[1]].L+1) //如果寄存器里的数活跃
+                    iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
+            if(rGroup[0]!=qtS[i].s[1].name) //如果寄存器里的不是s1则更新寄存器
+                iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
+            iCmpFn("        CMP AX,"+nameToAddr(qtS[i].s[2].name));
+            stringstream stream1;
+            stream1<<divCounts[2]++;
+            iCmpFn("        "+opRelation(qtS[i])+" J"+stream1.str());
+            iCmpFn("        MOV AX,0");
+            cmpTmp="J"+stream1.str()+":";
+            iCmpFn("        MOV AX,1");
+            rGroup[0]=qtS[i].s[3].name;
+            qtPos[0]=i;
+            qtPos[1]=3;
+        }
+        else if(qtS[i].s[0].name=="%")
+        {
+            if(rGroup[0]!="")
+                if(qtS[qtPos[0]].s[qtPos[1]].L+1)  //利用实现存在qtpos里的元素位置定位
+                    iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
+            iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
+            iCmpFn("        DIV "+nameToAddr(qtS[i].s[2].name));
+            iCmpFn("        MOV AX,DX");
+            rGroup[0]=qtS[i].s[3].name;
+            qtPos[0]=i;
+            qtPos[1]=3;
+            //ifSybCodes(qtS[i],i);
         }
     }
     return true;
@@ -379,9 +469,31 @@ void initL()
             }
         }
 }
-void qtScanL()
+
+void pushActive(int L,string str,int elsize)
 {
-    int i=0,j=0;
+    int i=0,flag=0;
+    if(L+1)
+        if(str[0]=='t')
+        {
+            for(i=0; i<activeVs.size(); i++)
+                if(activeVs[i].name==str)
+                {
+                    flag=1;
+                    break;
+                }
+            if(!flag)
+            {
+                SYMBL tmpT;
+                tmpT.name=str;
+                tmpT.L=elsize;
+                activeVs.push_back(tmpT);
+            }
+        }
+}
+void qtScanL() //生成带有活跃信息的四元式表 并提交活跃临时变量
+{
+    int i=0,j=0,p=0,elemSize=0; //elemsize用于存储四元式单个元素的大小
     QT qtElem;
     for(i=optdQT.size()-1; i>=0; i--)
     {
@@ -391,16 +503,23 @@ void qtScanL()
         }
         if(!ifDiv(optdQT[i].s[0]))
         {
+            for(p=1; p<4; p++)
+                if(nameToSize(optdQT[i].s[3])!=0)
+                    elemSize=nameToSize(optdQT[i].s[3]);
             int order=0;
             order=findElem(optdQT[i].s[3]);
             qtElem.s[3].L=sba[order].L;
             sba[order].L=-1;
+
             order=findElem(optdQT[i].s[2]);
             qtElem.s[2].L=sba[order].L;
             sba[order].L=i;
+
             order=findElem(optdQT[i].s[1]);
             qtElem.s[1].L=sba[order].L;
             sba[order].L=i;
+            for(p=1; p<4; p++)
+                pushActive(qtElem.s[p].L,qtElem.s[p].name,elemSize);
         }
         qtS.push_back(qtElem);
     }
