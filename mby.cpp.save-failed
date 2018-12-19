@@ -22,7 +22,6 @@ struct QT
 bool ifDiv(string str);
 int optimization();
 int divBlock();
-int qtOut();
 extern vector<Quadruple> optdQT;
 extern vector<Quadruple> qua_list;
 extern vector<vector<Synbl> > sbl;
@@ -124,7 +123,7 @@ string nameToAddr(string str) //根据变量名称寻找其在数据段中的地址
         {
             if(sbl[i][j].name==str)
             {
-                intAddr=sbl[i][j].addr/2;
+                intAddr=sbl[i][j].addr;
                 vType=sbl[i][j].type+"S";
                 break;
             }
@@ -247,7 +246,7 @@ bool buildCSEG()
     tmpStr="        XOR AX,AX";
     cmpCode.push_back(tmpStr);
     buildCodes();
-    iCmpFn("        MOV AH,4CH");
+    iCmpFn("        MOV AH,02H");
     iCmpFn("        INT 21H");
     tmpStr="CSEG    ENDS";
     cmpCode.push_back(tmpStr);
@@ -279,12 +278,12 @@ string divCodes(QT qtEq)
             int tmpCnts=types.back();
             stream1<<tmpCnts;
             string tmpJmps="WHE"+stream1.str();
-            iCmpFn("        JL  "+tmpJmps);
+            iCmpFn("        JE  "+tmpJmps);
             indica.push_back(tmpJmps);
         }
         else
         {
-            iCmpFn("        JL  "+cmpTmp.substr(0,cmpTmp.size()-2));
+            iCmpFn("        JE  "+cmpTmp.substr(0,cmpTmp.size()-2));
             indica.push_back(cmpTmp.substr(0,cmpTmp.size()-2));
         }
     }
@@ -305,10 +304,10 @@ string divCodes(QT qtEq)
         {
             types.push_back(++divCounts[1]);
             stream1<<divCounts[1];
-            iCmpFn("        JL  IFE"+stream1.str());
+            iCmpFn("        JE  IFE"+stream1.str());
         }
         else
-            iCmpFn("        JL  "+cmpTmp.substr(0,cmpTmp.size()-2));
+            iCmpFn("        JE  "+cmpTmp.substr(0,cmpTmp.size()-2));
     }
     else if(qtEq.s[0].name=="ie")
     {
@@ -362,15 +361,8 @@ bool buildCodes()
         else  if(qtS[i].s[0].name=="=") //是赋值语句
         {
             if(rGroup[0]!="")
-                if(rGroup[0]!=qtS[i].s[1].name)
-                {
-                    if(qtS[qtPos[0]].s[qtPos[1]].L+1)
-                        iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
-                }
-                else{
-                    if(qtS[i].s[1].L+1)
-                        iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
-                }
+                if(qtS[qtPos[0]].s[qtPos[1]].L+1)
+                    iCmpFn("        aMOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
             int p=0,flag=0;
             string str=qtS[i].s[3].name;
             for(p=0; p<str.size(); p++) //检查是否为数组
@@ -382,8 +374,7 @@ bool buildCodes()
                     flag=1;
                     break;
                 }
-            if(rGroup[0]!=qtS[i].s[1].name)
-                iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
+            iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
             qtPos[1]=3;
@@ -414,9 +405,9 @@ bool buildCodes()
             stringstream stream1;
             stream1<<divCounts[2]++;
             iCmpFn("        "+opRelation(qtS[i])+" J"+stream1.str());
-            iCmpFn("        NOT AX");
+            iCmpFn("        MOV AX,0");
             cmpTmp="J"+stream1.str()+":";
-            //iCmpFn("        MOV AX,1");
+            iCmpFn("        MOV AX,1");
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
             qtPos[1]=3;
@@ -460,7 +451,6 @@ int findElem(string str)
 }
 void initL()
 {
-    vector <SYMBL>().swap(sba);
     int i=0,j=0;
     for(i=0; i<optdQT.size(); i++)
         for(j=1; j<4; j++)
@@ -529,14 +519,9 @@ void qtScanL() //生成带有活跃信息的四元式表 并提交活跃临时变量
             for(p=1; p<4; p++)
                 pushActive(qtElem.s[p].L,qtElem.s[p].name,elemSize);
         }
-        else{
-                cout<<optdQT[i].s[0]<<endl;
-            initL();
-        }
         qtS.push_back(qtElem);
     }
     reverse(qtS.begin(),qtS.end());
-    cout<<qtS[6].s[3].name<<qtS[6].s[3].L<<endl;
 }
 int runCompil()
 {
@@ -545,7 +530,6 @@ int runCompil()
     divBlock();
     initL();
     qtScanL();
-    qtOut();
     buildCpl();
     int i=0;
     for(i=0; i<cmpCode.size(); i++)
