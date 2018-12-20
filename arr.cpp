@@ -184,8 +184,6 @@ int l_arr()
 
         }
     }
-    fout5.close();
-    fout6.close();
     return 0;
 }
 /*
