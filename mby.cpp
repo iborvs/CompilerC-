@@ -23,9 +23,12 @@ bool ifDiv(string str);
 int optimization();
 int divBlock();
 int qtOut();
+bool ifConst(string str);
+bool ifFunc(string str);
 extern vector<Quadruple> optdQT;
 extern vector<Quadruple> qua_list;
 extern vector<vector<Synbl> > sbl;
+extern vector<vector<Synbl> > vall;
 extern vector<Arr> arrs;
 vector<SYMBL>sba;  //伪符号表  //无活跃信息四元式
 vector<QT>qtS;      //有活跃信息四元式
@@ -35,6 +38,9 @@ vector<string>cmpCode; //存放汇编指令 没有分号
 string cmpTmp="";//汇编代码缓存区 在下一行非标号集合时附在头部
 int divCounts[7]= {0};//0为while 1为if 2 为关系符号
 int typeSize[4]= {4,2,2,4}; //存放对应占用十六进制数位
+vector<string>paras;  //存放参数
+vector<vector<Synbl> >  *tabP;
+string funcName="main";
 vector<int>types;
 vector<string>indica;
 vector<SYMBL>activeVs; //存储活跃的临时变量 存放名称和占用大小
@@ -87,12 +93,14 @@ string addrToType(int i) //根据十六进制数位转换所需单元大小类型
 int nameToSize(string str) //根据名字寻找大小
 {
     int strSize=0,i,j;
+    if(ifConst(str))
+        return 4;
     if(str[0]!='t')
-        for(i=0; i<sbl.size(); i++)
+        for(i=0; i<tabP->size(); i++)
         {
-            for(j=0; j<sbl[i].size(); j++)
+            for(j=0; j<(*tabP)[i].size(); j++)
             {
-                if(sbl[i][j].name==str)
+                if( (*tabP)[i][j].name==str)
                 {
                     strSize=typeSize[i];
                     break;
@@ -118,14 +126,16 @@ string nameToAddr(string str) //根据变量名称寻找其在数据段中的地址
     int i=0,j=0;
     if( (str[0]-'0')<=9 && (str[0]-'0')>=0) //检查是否为常数
         return str;
-    for(i=0; i<sbl.size(); i++)
+    for(i=0; i<tabP->size(); i++)
     {
-        for(j=0; j<sbl[i].size(); j++)
+        for(j=0; j<(*tabP)[i].size(); j++)
         {
-            if(sbl[i][j].name==str)
+            if( (*tabP)[i][j].name==str)
             {
-                intAddr=sbl[i][j].addr/2;
-                vType=sbl[i][j].type+"S";
+                intAddr=(*tabP)[i][j].addr/2;
+                vType=(*tabP)[i][j].type+"S";
+                if(tabP==&vall)
+                    vType="vall"+(*tabP)[i][j].type+"S";
                 break;
             }
         }
@@ -215,6 +225,25 @@ bool buildDSEG()  //建立数据段汇编代码 未完
             cmpCode.push_back(tmpStr);
         }
     }
+    for(i=0; i<vall.size(); i++) //分配子函数符号表中的空间
+    {
+        int len=vall[i].size();
+        int maxAddr;
+        stream1.clear();
+        stream1.str("");
+        if(len)
+        {
+            maxAddr=vall[i][len-1].addr+typeSize[i];
+            maxAddr/=typeSize[i];
+            stream1<<maxAddr;
+            tmpStr="        vall"+vall[i][0].type+"S "+addrToType(typeSize[i])+" "+stream1.str()+" DUP(0)";
+            cmpCode.push_back(tmpStr);
+        }
+    }
+    tmpStr="        sq DW 0";
+    cmpCode.push_back(tmpStr);
+    tmpStr="        main DW 0";
+    cmpCode.push_back(tmpStr);
     for(i=0; i<arrs.size(); i++)
     {
         tSize=arrs[i].length/arrs[i].up;
@@ -247,11 +276,9 @@ bool buildCSEG()
     tmpStr="        XOR AX,AX";
     cmpCode.push_back(tmpStr);
     buildCodes();
-    iCmpFn("        MOV AH,4CH");
-    iCmpFn("        INT 21H");
     tmpStr="CSEG    ENDS";
     cmpCode.push_back(tmpStr);
-    tmpStr="END START";
+    tmpStr="        END START";
     cmpCode.push_back(tmpStr);
     return true;
 }
@@ -316,6 +343,33 @@ string divCodes(QT qtEq)
         stream1<<tmpCnts;
         cmpTmp="IFE"+stream1.str()+":";
     }
+    else if(qtEq.s[0].name=="end" && qtEq.s[1].name=="main")
+    {
+        iCmpFn("        MOV AH,4CH");
+        iCmpFn("        INT 21H");
+    }
+    else if(qtEq.s[0].name=="start" && qtEq.s[1].name!="main")
+    {
+        int paraI=0;
+        tabP=&vall;
+        funcName=qtEq.s[1].name;
+        iCmpFn(qtEq.s[1].name+"FC    PROC");
+        for(paraI=0; paraI<paras.size(); paraI++)
+        {
+            stream1.clear();
+            stream1.str("");
+            stream1<<paraI*2;
+            iCmpFn("        MOV BX,"+paras[paraI]);
+            iCmpFn("        MOV [vall"+vall[0][paraI].type+"S+"+stream1.str()+"],BX");
+        }
+        vector<string>().swap(paras);
+    }
+    else if(qtEq.s[0].name=="end" && qtEq.s[1].name!="main")
+    {
+        funcName="";
+        iCmpFn("        RET");
+        iCmpFn(qtEq.s[1].name+"FC    ENDP");
+    }
     return tmpStr;
 }
 int iCmpFn(string str)  //将汇编语言入栈函数 部分汇编代码自动对齐
@@ -339,13 +393,11 @@ bool buildCodes()
             if(rGroup[0]=="")
             {
                 iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
-                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" AX,"+nameToAddr(qtS[i].s[2].name));
             }
             else if(rGroup[0]==qtS[i].s[1].name)
             {
                 if(qtS[i].s[1].L+1)
                     iCmpFn("        MOV "+nameToAddr(qtS[i].s[1].name)+",AX");
-                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" AX,"+nameToAddr(qtS[i].s[2].name));
             }
             else
             {
@@ -353,8 +405,11 @@ bool buildCodes()
                     //iCmpFn("        ST AX,"+qtS[qtPos[0]].s[qtPos[1]].name);
                     iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
                 iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
-                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" AX,"+nameToAddr(qtS[i].s[2].name));
             }
+            if(opToCmpil(qtS[i].s[0].name)!="MUL")
+                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" AX,"+nameToAddr(qtS[i].s[2].name));
+            else
+                iCmpFn("        "+opToCmpil(qtS[i].s[0].name)+" "+nameToAddr(qtS[i].s[2].name));
             rGroup[0]=qtS[i].s[3].name;
             qtPos[0]=i;
             qtPos[1]=3;
@@ -367,7 +422,8 @@ bool buildCodes()
                     if(qtS[qtPos[0]].s[qtPos[1]].L+1)
                         iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
                 }
-                else{
+                else
+                {
                     if(qtS[i].s[1].L+1)
                         iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
                 }
@@ -434,6 +490,37 @@ bool buildCodes()
             qtPos[0]=i;
             qtPos[1]=3;
             //ifSybCodes(qtS[i],i);
+        }
+        else
+        {
+            if(qtS[i].s[0].name=="ret")
+            {
+                if(!ifConst(qtS[i].s[1].name))
+                {
+                    if(rGroup[0]!="")
+                    {
+                        if(rGroup[0]!=qtS[i].s[1].name)
+                        {
+                            if(qtS[qtPos[0]].s[qtPos[1]].L+1)
+                                iCmpFn("        MOV "+nameToAddr(rGroup[0])+",AX");
+                            iCmpFn("        MOV AX,"+nameToAddr(rGroup[0]));
+                        }
+                    }
+                    if(rGroup[0]=="")
+                        iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
+                    iCmpFn("        MOV "+funcName+",AX");
+                }
+                else
+                    iCmpFn("        MOV "+funcName+","+qtS[i].s[1].name);
+            }
+            else if(qtS[i].s[0].name=="call")
+            {
+                iCmpFn("        CALL "+qtS[i].s[1].name+"FC");
+            }
+            else if(qtS[i].s[0].name=="param")
+            {
+                paras.push_back(nameToAddr(qtS[i].s[1].name));
+            }
         }
     }
     return true;
@@ -502,10 +589,11 @@ void pushActive(int L,string str,int elsize)
 }
 void qtScanL() //生成带有活跃信息的四元式表 并提交活跃临时变量
 {
+    tabP=&vall;
     int i=0,j=0,p=0,elemSize=0; //elemsize用于存储四元式单个元素的大小
-    QT qtElem;
     for(i=optdQT.size()-1; i>=0; i--)
     {
+        QT qtElem;
         for(j=0; j<4; j++)
         {
             qtElem.s[j].name=optdQT[i].s[j];
@@ -513,36 +601,50 @@ void qtScanL() //生成带有活跃信息的四元式表 并提交活跃临时变量
         if(!ifDiv(optdQT[i].s[0]))
         {
             for(p=1; p<4; p++)
-                if(nameToSize(optdQT[i].s[3])!=0)
-                    elemSize=nameToSize(optdQT[i].s[3]);
+                if(nameToSize(optdQT[i].s[p])!=0){
+                    elemSize=nameToSize(optdQT[i].s[p]);
+                    break;
+                }
             int order=0;
-            order=findElem(optdQT[i].s[3]);
-            qtElem.s[3].L=sba[order].L;
-            sba[order].L=-1;
 
-            order=findElem(optdQT[i].s[2]);
-            qtElem.s[2].L=sba[order].L;
-            sba[order].L=i;
+            if(optdQT[i].s[3]!="_")
+            {
+                order=findElem(optdQT[i].s[3]);
+                qtElem.s[3].L=sba[order].L;
+                sba[order].L=-1;
+            }
+            if(optdQT[i].s[3]!="_")
+            {
+                order=findElem(optdQT[i].s[2]);
+                qtElem.s[2].L=sba[order].L;
+                sba[order].L=i;
+            }
+            if(optdQT[i].s[3]!="_")
+            {
+                order=findElem(optdQT[i].s[1]);
+                qtElem.s[1].L=sba[order].L;
+                sba[order].L=i;
+            }
 
-            order=findElem(optdQT[i].s[1]);
-            qtElem.s[1].L=sba[order].L;
-            sba[order].L=i;
             for(p=1; p<4; p++)
                 pushActive(qtElem.s[p].L,qtElem.s[p].name,elemSize);
         }
-        else{
-                cout<<optdQT[i].s[0]<<endl;
+        else
+        {
+            if(optdQT[i].s[0]=="end"&&optdQT[i].s[1]=="main")
+                tabP=&sbl;
             initL();
         }
         qtS.push_back(qtElem);
     }
     reverse(qtS.begin(),qtS.end());
-    cout<<qtS[6].s[3].name<<qtS[6].s[3].L<<endl;
+    tabP=&sbl;
 }
 int runCompil()
 {
     ofstream out;
     out.open("compileCodes.ASM");
+    tabP=&sbl;
     divBlock();
     initL();
     qtScanL();

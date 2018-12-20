@@ -11,6 +11,7 @@ using namespace std;
 extern vector<Quadruple> qua_list;
 int qtOut();
 int rebuildQT();
+bool ifFunc(string str);
 struct DAGnode
 {
     int n;
@@ -23,7 +24,8 @@ vector<Quadruple>tmpQTS;
 vector<DAGnode>DAG;
 vector<Quadruple>optdQT; //优化后的四元式
 int xyPos[2]= {-2,-2}; //用于存储ifExists后寻找的二元位置 第二位位-1则是在主元素上
-string divSymbls[7]= {"wh","do","we","if","el","ie","end"};
+string divSymbls[8]= {"wh","do","we","if","el","ie","end","start"};
+string funcSybls[3]= {"ret","call","param"};
 float preCompute(float a,float b,string ope)
 {
     float c=0;
@@ -86,13 +88,21 @@ bool ifExist(string str)
 }
 int findPos(string str) //寻找主元素的位置
 {
-    int i=0,pos=-1;
+    int i=0,pos=-1,j=0;
     for(i=0; i<DAG.size() ; i++)
     {
         if(DAG[i].M==str)
         {
             pos=i;
             break;
+        }
+        for(j=0; j<DAG[i].A.size(); j++)
+        {
+            if(DAG[i].A[j]==str)
+            {
+                pos=i;
+                break;
+            }
         }
     }
     return pos;
@@ -156,7 +166,7 @@ int buildNode(string str)
 bool ifConst(string str)
 {
     bool result=false;
-    if( (str[0]-'0')<10 && (str[0]-'0') >0)  //定义一个常数类型第一位必然是数字
+    if( (str[0]-'0')<10 && (str[0]-'0') >=0)  //定义一个常数类型第一位必然是数字
         result=true;
     return result;
 }
@@ -264,6 +274,13 @@ int optimization()
                 DAG.push_back(tmpNode);
             }
         }
+        else if(ifFunc(tmpQTS[qtI].s[0]))
+        {
+            tmpNode.M=tmpQTS[qtI].s[1];
+            tmpNode.ope=tmpQTS[qtI].s[0];
+            tmpNode.n=DAG.size()+1;
+            DAG.push_back(tmpNode);
+        }
         qtI++;
     }
     rebuildQT();
@@ -305,6 +322,14 @@ int rebuildQT()  //输出四元式到新栈
             tmpQT.s[3]=DAG[i].M;
             optdQT.push_back(tmpQT);
         }
+        else if(  ifFunc(DAG[i].ope) )
+        {
+            tmpQT.s[0]=DAG[i].ope;
+            tmpQT.s[1]=DAG[i].M;
+            tmpQT.s[2]="_";
+            tmpQT.s[3]="_";
+            optdQT.push_back(tmpQT);
+        }
         for(j=0; j<DAG[i].A.size(); j++)
         {
             if(DAG[i].A[j][0]!='t')
@@ -324,9 +349,23 @@ bool ifDiv(string str)
 {
     bool re=false;
     int i=0;
-    for(i=0; i<7; i++) //长度寻求
+    for(i=0; i<8; i++) //长度寻求
     {
         if(divSymbls[i]==str)
+        {
+            re=true;
+            break;
+        }
+    }
+    return re;
+}
+bool ifFunc(string str)
+{
+    bool re=false;
+    int i=0;
+    for(i=0; i<3; i++) //长度寻求
+    {
+        if(funcSybls[i]==str)
         {
             re=true;
             break;
