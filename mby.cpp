@@ -40,6 +40,7 @@ int divCounts[7]= {0};//0为while 1为if 2 为关系符号
 int typeSize[4]= {4,2,2,4}; //存放对应占用十六进制数位
 vector<string>paras;  //存放参数
 vector<vector<Synbl> >  *tabP;
+vector<string>funcRe;
 string funcName="main";
 vector<int>types;
 vector<string>indica;
@@ -240,10 +241,10 @@ bool buildDSEG()  //建立数据段汇编代码 未完
             cmpCode.push_back(tmpStr);
         }
     }
-    tmpStr="        sq DW 0";
-    cmpCode.push_back(tmpStr);
-    tmpStr="        main DW 0";
-    cmpCode.push_back(tmpStr);
+    for(i=0;i<funcRe.size();i++){
+        tmpStr="        "+funcRe[i]+" DW 0";
+        cmpCode.push_back(tmpStr);
+    }
     for(i=0; i<arrs.size(); i++)
     {
         tSize=arrs[i].length/arrs[i].up;
@@ -631,6 +632,8 @@ void qtScanL() //生成带有活跃信息的四元式表 并提交活跃临时变量
         }
         else
         {
+            if(optdQT[i].s[0]=="start")
+                funcRe.push_back(optdQT[i].s[1]);
             if(optdQT[i].s[0]=="end"&&optdQT[i].s[1]=="main")
                 tabP=&sbl;
             initL();
