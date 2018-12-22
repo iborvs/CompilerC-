@@ -241,7 +241,8 @@ bool buildDSEG()  //建立数据段汇编代码 未完
             cmpCode.push_back(tmpStr);
         }
     }
-    for(i=0;i<funcRe.size();i++){
+    for(i=0; i<funcRe.size(); i++)
+    {
         tmpStr="        "+funcRe[i]+" DW 0";
         cmpCode.push_back(tmpStr);
     }
@@ -463,7 +464,12 @@ bool buildCodes()
         else  if( opRelation(qtS[i])!="ERROR" ) //关系比较符 代码经过优化
         {
             if(rGroup[0]!="") //若寄存器里的数不为空
-                if(qtS[qtPos[0]].s[qtPos[1]].L+1) //如果寄存器里的数活跃
+                if(rGroup[0]==qtS[i].s[1].name)
+                {
+                    if(qtS[i].s[1].L+1)
+                        iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
+                }
+                else if(qtS[qtPos[0]].s[qtPos[1]].L+1) //如果寄存器里的数活跃
                     iCmpFn("        MOV "+nameToAddr(qtS[qtPos[0]].s[qtPos[1]].name)+",AX");
             if(rGroup[0]!=qtS[i].s[1].name) //如果寄存器里的不是s1则更新寄存器
                 iCmpFn("        MOV AX,"+nameToAddr(qtS[i].s[1].name));
@@ -602,7 +608,8 @@ void qtScanL() //生成带有活跃信息的四元式表 并提交活跃临时变量
         if(!ifDiv(optdQT[i].s[0]))
         {
             for(p=1; p<4; p++)
-                if(nameToSize(optdQT[i].s[p])!=0){
+                if(nameToSize(optdQT[i].s[p])!=0)
+                {
                     elemSize=nameToSize(optdQT[i].s[p]);
                     break;
                 }
@@ -614,13 +621,13 @@ void qtScanL() //生成带有活跃信息的四元式表 并提交活跃临时变量
                 qtElem.s[3].L=sba[order].L;
                 sba[order].L=-1;
             }
-            if(optdQT[i].s[3]!="_")
+            if(optdQT[i].s[2]!="_")
             {
                 order=findElem(optdQT[i].s[2]);
                 qtElem.s[2].L=sba[order].L;
                 sba[order].L=i;
             }
-            if(optdQT[i].s[3]!="_")
+            if(optdQT[i].s[1]!="_")
             {
                 order=findElem(optdQT[i].s[1]);
                 qtElem.s[1].L=sba[order].L;
