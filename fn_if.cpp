@@ -8,6 +8,7 @@ extern vector<Word> words;
 extern int token_i;
 extern int t_k;
 extern string tk;
+extern Synbl symbol;
 
 int fn_if()
 {
@@ -143,6 +144,144 @@ int fn_if()
                         }
                     }
                 }
+            }
+        }
+    }
+    return 0;
+}
+
+void formal_para()
+{
+    if(first_formal_para()) {
+        other_formal_para();
+    }
+}
+
+int first_formal_para()
+{
+    int token_i_tmp = token_i;
+    if(type()) {
+        if(id()) {
+            fill_symbol();
+            return 1;
+        }
+    }
+    token_i = token_i_tmp;
+    return 0;
+}
+int other_formal_para()
+{
+    int token_i_tmp = token_i;
+    if(words[token_i].value == ",") {
+        token_i++;
+        if(type()) {
+            if(id()) {
+                fill_symbol();
+                if(other_formal_para())
+                    return 1;
+            }
+            else {
+                token_i = token_i_tmp;
+                return 0;
+            }
+        }
+        else {
+            token_i = token_i_tmp;
+            return 0;
+        }
+    }
+    else {
+        token_i = token_i_tmp;
+        return 0;
+    }
+}
+
+void actual_para()
+{
+    if(first_actual_para()) {
+        other_actual_para();
+    }
+}
+
+int first_actual_para()
+{
+    int token_i_tmp = token_i;
+    if(id()) {
+        if(un_def(words[token_i-1].value)) return 0;
+        qua.s[0] = "param";
+        qua.s[1] = words[token_i-1].value;
+        qua.s[2] = "_";
+        qua.s[3] = "_";
+        out_qua();
+        return 1;
+    }
+    token_i =  token_i_tmp;
+    return 0;
+}
+int other_actual_para()
+{
+    int token_i_tmp = token_i;
+    if(words[token_i].value == ",") {
+        token_i++;
+        if(id()) {
+            if(un_def(words[token_i-1].value)) return 0;
+            qua.s[0] = "param";
+            qua.s[1] = words[token_i-1].value;
+            qua.s[2] = "_";
+            qua.s[3] = "_";
+            out_qua();
+            if(other_actual_para())
+                return 1;
+        }
+        else {
+            token_i = token_i_tmp;
+            return 0;
+        }
+    }
+    else {
+        token_i = token_i_tmp;
+        return 0;
+    }
+}
+
+int type()
+{
+    string s = words[token_i].value;
+    if(s == "int" || s == "char" || s == "float" || s == "bool" || s == "void") {
+        symbol.type = s;
+        token_i++;
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+int id()
+{
+    if(words[token_i].type == "I") {
+        token_i++;
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+int rt()
+{
+    if(words[token_i].value == "return") {
+        token_i++;
+        if(words[token_i].type == "c" || words[token_i].type == "I") {
+            qua.s[0] = "ret";
+            qua.s[1] = words[token_i].value;
+            qua.s[2] = "_";
+            qua.s[3] = "_";
+            out_qua();
+            token_i++;
+            if(words[token_i].value == ";") {
+                token_i++;
+                return 1;
             }
         }
     }
