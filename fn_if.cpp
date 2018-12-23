@@ -81,6 +81,7 @@ int fn_if()
                 }
             }
             else if(words[token_i].type == "I" || words[token_i].type == "c") {
+                if(un_def(words[token_i].value)) return 0;
                 string s1 = words[token_i].value;
                 token_i++;
                 string str = words[token_i].value;

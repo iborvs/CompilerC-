@@ -12,6 +12,7 @@ vector<Arr> sub_arrs; //子函数数组表
 vector<int> consl; //常数表；
 vector<string> const_C; //常字符
 vector<string> const_S; //常字符串
+vector<string> struc_symbol;   //第一个值是结构体名字，第二个开始是结构体中变量名
 //int token_i = 0;
 //int qua_i;
 
