@@ -343,6 +343,18 @@ string divCodes(QT qtEq)
             indica.push_back(stream1.str());
         }
     }
+    else if(qtEq.s[0].name=="el")
+    {
+        string top;
+        top=indica.back();
+        indica.pop_back();
+        stream1<<++divCounts[1];
+        indica.push_back("IFE"+stream1.str());
+        indica.push_back(top);
+        iCmpFn("        JMP IFE"+stream1.str());
+        cmpTmp=indica.back()+":";
+        indica.pop_back();
+    }
     else if(qtEq.s[0].name=="ie")
     {
         //int tmpCnts=types.back();
