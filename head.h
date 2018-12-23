@@ -88,6 +88,8 @@ int id();                  //判断该token是不是一个标识符
 int type();                //判断此token是不是一个类型变量
 void out_qua();            //四元式输出到文件和四元式序列vector
 string int_to_str(int& k); //int转字符串
+int stru();                 //结构体
+int stru_v();              //结构体中元素
 
 int exp();         //算数表达式
 int fn_while();    //while函数
