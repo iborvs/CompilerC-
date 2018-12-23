@@ -347,6 +347,8 @@ string divCodes(QT qtEq)
     {
         //int tmpCnts=types.back();
         //stream1<<tmpCnts;
+        if(cmpTmp!="")
+            iCmpFn("         ");
         cmpTmp=indica.back()+":";
         indica.pop_back();
     }
@@ -515,6 +517,7 @@ bool buildCodes()
                         {
                             if(qtS[qtPos[0]].s[qtPos[1]].L+1)
                                 iCmpFn("        MOV "+nameToAddr(rGroup[0])+",AX");
+                            rGroup[0]="";
                             iCmpFn("        MOV AX,"+nameToAddr(rGroup[0]));
                         }
                     }
@@ -523,7 +526,18 @@ bool buildCodes()
                     iCmpFn("        MOV "+funcName+",AX");
                 }
                 else
+                {
+                    if(rGroup[0]!="")
+                    {
+                        if(rGroup[0]!=qtS[i].s[1].name)
+                        {
+                            if(qtS[qtPos[0]].s[qtPos[1]].L+1)
+                                iCmpFn("        MOV "+nameToAddr(rGroup[0])+",AX");
+                            rGroup[0]="";
+                        }
+                    }
                     iCmpFn("        MOV "+funcName+","+qtS[i].s[1].name);
+                }
             }
             else if(qtS[i].s[0].name=="call")
             {
