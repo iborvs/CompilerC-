@@ -332,18 +332,23 @@ string divCodes(QT qtEq)
         iCmpFn("        CMP AX,0");
         if(cmpTmp=="")
         {
-            types.push_back(++divCounts[1]);
-            stream1<<divCounts[1];
+            //types.push_back(++divCounts[1]);
+            stream1<<++divCounts[1];
             iCmpFn("        JL  IFE"+stream1.str());
+            indica.push_back("IFE"+stream1.str());
         }
         else
+        {
             iCmpFn("        JL  "+cmpTmp.substr(0,cmpTmp.size()-2));
+            indica.push_back(stream1.str());
+        }
     }
     else if(qtEq.s[0].name=="ie")
     {
-        int tmpCnts=types.back();
-        stream1<<tmpCnts;
-        cmpTmp="IFE"+stream1.str()+":";
+        //int tmpCnts=types.back();
+        //stream1<<tmpCnts;
+        cmpTmp=indica.back()+":";
+        indica.pop_back();
     }
     else if(qtEq.s[0].name=="end" && qtEq.s[1].name=="main")
     {
